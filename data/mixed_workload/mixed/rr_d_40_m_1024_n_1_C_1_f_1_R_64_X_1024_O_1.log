@@ -1,0 +1,15 @@
+:: TPA_CFG='net { name=enp194s0f1np1; mac=10:70:fd:c4:0e:45; ip=172.24.5.17; mask=255.255.255.0; gw=10.67.24.65; ip6=fe80::1270:fdff:fec4:e45/64; } dpdk { pci=0000:c2:00.1; } tcp {tso = 0; }'
+:: cmd=/home/balasuk/tcp_bench/libtpa/build/bin/app/tperf -c 172.24.5.101 -p 2888 -d 5 -n 1 -t rr -Z 1 -m 1024 -F 1 -R 64 -X 1024 -S 1
+    0 RR .0 min=8.96us avg=9.64us max=568.06us read(Gbits/sec)=0.004 write(Gbits/sec)=0.063 count=7671
+    0 RR Total-Throughput read(Gbits/sec)=0.004 write(Gbits/sec)=0.063
+    1 RR .0 min=8.96us avg=19.63us max=908922.11us read(Gbits/sec)=0.045 write(Gbits/sec)=0.727 count=88703
+    1 RR Total-Throughput read(Gbits/sec)=0.045 write(Gbits/sec)=0.727
+    2 RR .0 min=8.96us avg=9.38us max=1416.19us read(Gbits/sec)=0.054 write(Gbits/sec)=0.863 count=105339
+    2 RR Total-Throughput read(Gbits/sec)=0.054 write(Gbits/sec)=0.863
+    3 RR .0 min=8.96us avg=9.37us max=48.38us read(Gbits/sec)=0.054 write(Gbits/sec)=0.864 count=105502
+    3 RR Total-Throughput read(Gbits/sec)=0.054 write(Gbits/sec)=0.864
+    4 RR .0 min=9.22us avg=9.37us max=13.82us read(Gbits/sec)=0.054 write(Gbits/sec)=0.864 count=105480
+    4 RR Total-Throughput read(Gbits/sec)=0.054 write(Gbits/sec)=0.864
+
+---
+ 0 nr_conn=1 nr_zero_io_conn=0

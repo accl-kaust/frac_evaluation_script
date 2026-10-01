@@ -1,0 +1,85 @@
+:: TPA_CFG='net { name=enp194s0f1np1; mac=10:70:fd:c4:0e:45; ip=172.24.5.17; mask=255.255.255.0; gw=10.67.24.65; ip6=fe80::1270:fdff:fec4:e45/64; } dpdk { pci=0000:c2:00.1; } tcp {tso = 0; }'
+:: cmd=/home/balasuk/tcp_bench/libtpa/build/bin/app/tperf -c 172.24.5.101 -p 2888 -d 40 -n 1 -m 1024 -R 960 -t rr -F 3 -X 1024 -Z 1
+    0 RR .0 min=10.24us avg=10.77us max=558.08us read(Gbits/sec)=0.572 write(Gbits/sec)=0.610 count=74500
+    0 RR Total-Throughput read(Gbits/sec)=0.572 write(Gbits/sec)=0.610
+    1 RR .0 min=10.50us avg=10.69us max=1321.47us read(Gbits/sec)=0.712 write(Gbits/sec)=0.759 count=92650
+    1 RR Total-Throughput read(Gbits/sec)=0.712 write(Gbits/sec)=0.759
+    2 RR .0 min=10.50us avg=10.68us max=1191.42us read(Gbits/sec)=0.712 write(Gbits/sec)=0.759 count=92694
+    2 RR Total-Throughput read(Gbits/sec)=0.712 write(Gbits/sec)=0.759
+    3 RR .0 min=10.50us avg=10.66us max=53.50us read(Gbits/sec)=0.713 write(Gbits/sec)=0.761 count=92871
+    3 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.761
+    4 RR .0 min=10.50us avg=10.66us max=50.18us read(Gbits/sec)=0.713 write(Gbits/sec)=0.761 count=92869
+    4 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.761
+    5 RR .0 min=10.50us avg=10.66us max=90.11us read(Gbits/sec)=0.713 write(Gbits/sec)=0.761 count=92855
+    5 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.761
+    6 RR .0 min=10.50us avg=10.70us max=2581.76us read(Gbits/sec)=0.710 write(Gbits/sec)=0.758 count=92498
+    6 RR Total-Throughput read(Gbits/sec)=0.710 write(Gbits/sec)=0.758
+    7 RR .0 min=10.50us avg=10.71us max=2877.44us read(Gbits/sec)=0.709 write(Gbits/sec)=0.757 count=92378
+    7 RR Total-Throughput read(Gbits/sec)=0.709 write(Gbits/sec)=0.757
+    8 RR .0 min=10.50us avg=10.68us max=760.83us read(Gbits/sec)=0.712 write(Gbits/sec)=0.760 count=92723
+    8 RR Total-Throughput read(Gbits/sec)=0.712 write(Gbits/sec)=0.760
+    9 RR .0 min=10.24us avg=10.66us max=117.25us read(Gbits/sec)=0.713 write(Gbits/sec)=0.761 count=92873
+    9 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.761
+   10 RR .0 min=10.50us avg=10.68us max=1020.67us read(Gbits/sec)=0.712 write(Gbits/sec)=0.759 count=92696
+   10 RR Total-Throughput read(Gbits/sec)=0.712 write(Gbits/sec)=0.759
+   11 RR .0 min=10.50us avg=10.70us max=2561.54us read(Gbits/sec)=0.711 write(Gbits/sec)=0.758 count=92569
+   11 RR Total-Throughput read(Gbits/sec)=0.711 write(Gbits/sec)=0.758
+   12 RR .0 min=10.50us avg=10.71us max=2853.63us read(Gbits/sec)=0.710 write(Gbits/sec)=0.757 count=92400
+   12 RR Total-Throughput read(Gbits/sec)=0.710 write(Gbits/sec)=0.757
+   13 RR .0 min=10.50us avg=10.67us max=50.69us read(Gbits/sec)=0.713 write(Gbits/sec)=0.760 count=92809
+   13 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.760
+   14 RR .0 min=10.50us avg=10.66us max=35.07us read(Gbits/sec)=0.713 write(Gbits/sec)=0.761 count=92841
+   14 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.761
+   15 RR .0 min=10.50us avg=10.67us max=813.57us read(Gbits/sec)=0.712 write(Gbits/sec)=0.760 count=92764
+   15 RR Total-Throughput read(Gbits/sec)=0.712 write(Gbits/sec)=0.760
+   16 RR .0 min=10.50us avg=10.67us max=41.73us read(Gbits/sec)=0.713 write(Gbits/sec)=0.761 count=92840
+   16 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.761
+   17 RR .0 min=10.50us avg=10.68us max=1057.28us read(Gbits/sec)=0.712 write(Gbits/sec)=0.759 count=92711
+   17 RR Total-Throughput read(Gbits/sec)=0.712 write(Gbits/sec)=0.759
+   18 RR .0 min=10.50us avg=10.67us max=68.61us read(Gbits/sec)=0.713 write(Gbits/sec)=0.760 count=92829
+   18 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.760
+   19 RR .0 min=10.24us avg=10.67us max=734.46us read(Gbits/sec)=0.713 write(Gbits/sec)=0.760 count=92780
+   19 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.760
+   20 RR .0 min=10.50us avg=10.67us max=41.73us read(Gbits/sec)=0.713 write(Gbits/sec)=0.760 count=92832
+   20 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.760
+   21 RR .0 min=10.50us avg=10.67us max=50.43us read(Gbits/sec)=0.713 write(Gbits/sec)=0.760 count=92827
+   21 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.760
+   22 RR .0 min=10.50us avg=10.68us max=1060.86us read(Gbits/sec)=0.712 write(Gbits/sec)=0.760 count=92725
+   22 RR Total-Throughput read(Gbits/sec)=0.712 write(Gbits/sec)=0.760
+   23 RR .0 min=10.50us avg=10.67us max=62.72us read(Gbits/sec)=0.713 write(Gbits/sec)=0.760 count=92813
+   23 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.760
+   24 RR .0 min=10.50us avg=10.66us max=56.32us read(Gbits/sec)=0.713 write(Gbits/sec)=0.761 count=92837
+   24 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.761
+   25 RR .0 min=10.24us avg=10.67us max=802.05us read(Gbits/sec)=0.713 write(Gbits/sec)=0.760 count=92816
+   25 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.760
+   26 RR .0 min=10.50us avg=10.67us max=59.90us read(Gbits/sec)=0.713 write(Gbits/sec)=0.760 count=92826
+   26 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.760
+   27 RR .0 min=10.50us avg=10.67us max=51.71us read(Gbits/sec)=0.713 write(Gbits/sec)=0.761 count=92840
+   27 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.761
+   28 RR .0 min=10.50us avg=10.67us max=43.78us read(Gbits/sec)=0.713 write(Gbits/sec)=0.760 count=92815
+   28 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.760
+   29 RR .0 min=10.50us avg=10.68us max=1064.96us read(Gbits/sec)=0.712 write(Gbits/sec)=0.759 count=92699
+   29 RR Total-Throughput read(Gbits/sec)=0.712 write(Gbits/sec)=0.759
+   30 RR .0 min=10.50us avg=10.67us max=54.02us read(Gbits/sec)=0.713 write(Gbits/sec)=0.760 count=92796
+   30 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.760
+   31 RR .0 min=10.50us avg=10.67us max=46.34us read(Gbits/sec)=0.713 write(Gbits/sec)=0.760 count=92783
+   31 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.760
+   32 RR .0 min=10.50us avg=10.67us max=58.88us read(Gbits/sec)=0.713 write(Gbits/sec)=0.760 count=92798
+   32 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.760
+   33 RR .0 min=10.50us avg=10.68us max=802.82us read(Gbits/sec)=0.712 write(Gbits/sec)=0.759 count=92694
+   33 RR Total-Throughput read(Gbits/sec)=0.712 write(Gbits/sec)=0.759
+   34 RR .0 min=10.50us avg=10.67us max=56.58us read(Gbits/sec)=0.713 write(Gbits/sec)=0.760 count=92793
+   34 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.760
+   35 RR .0 min=10.50us avg=10.67us max=50.18us read(Gbits/sec)=0.713 write(Gbits/sec)=0.760 count=92799
+   35 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.760
+   36 RR .0 min=10.50us avg=10.67us max=49.15us read(Gbits/sec)=0.713 write(Gbits/sec)=0.760 count=92798
+   36 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.760
+   37 RR .0 min=10.50us avg=10.68us max=1073.66us read(Gbits/sec)=0.712 write(Gbits/sec)=0.759 count=92702
+   37 RR Total-Throughput read(Gbits/sec)=0.712 write(Gbits/sec)=0.759
+   38 RR .0 min=10.50us avg=10.67us max=60.16us read(Gbits/sec)=0.713 write(Gbits/sec)=0.760 count=92790
+   38 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.760
+   39 RR .0 min=10.50us avg=10.67us max=44.54us read(Gbits/sec)=0.713 write(Gbits/sec)=0.760 count=92782
+   39 RR Total-Throughput read(Gbits/sec)=0.713 write(Gbits/sec)=0.760
+
+---
+ 0 nr_conn=1 nr_zero_io_conn=0
