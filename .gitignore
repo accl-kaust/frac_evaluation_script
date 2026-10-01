@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Raw scalability traces (2.4 GB, 1200 files). Tracked compressed as
+# data/scalability/*.tar.xz instead; run ./unpack_data.sh to extract them.
+data/scalability/top_k_*_inst/
+
+# Helvetica Neue .ttf files extracted from the macOS system font by
+# extract_fonts.py. Apple-licensed, so not redistributed here; the figure
+# scripts fall back to matplotlib's default font when they are absent.
+fonts/
