@@ -5,7 +5,10 @@ import os
 import re
 from matplotlib.ticker import ScalarFormatter
 
-import plot_fonts  # noqa: F401  (Helvetica Neue from fonts/, medium weight everywhere)
+import plot_fonts  # Helvetica Neue from fonts/, shared palette and print-size style
+
+# Printed at 0.48\textwidth = 241.9 pt in the paper; its tight-cropped PDF is ~568 pt wide.
+pstyle = plot_fonts.paper_style(printed_width_pt=241.9, cropped_width_pt=567.5)
 
 class RawLatencyProcessor:
     def __init__(self, directory_path):
@@ -158,11 +161,11 @@ def create_cdf_comparison_plot():
     ]
     
     # Color-blind friendly palette
-    colors = ['#004D7A', '#D55E00', '#D98CBF', '#004D7A', '#D55E00', '#D98CBF', '#004D7A', '#D55E00', '#D98CBF']  # Blue, Orange, Pink for each platform
+    colors = [plot_fonts.C_OURS, plot_fonts.C_BASE, plot_fonts.C_THIRD] * 3  # fRAC, CPU, DPU for each instance count
     line_styles = ['-', '-', '-', '--', '--', '--', ':', ':', ':']  # Solid for Accel, Dashed for CPU, Dotted for DPU
     
     # Create the plot
-    plt.figure(figsize=(8, 2.8))
+    plt.figure(figsize=(8, 2.9))  # 2.9 in keeps the printed height at ~83 pt with 6 pt text
     
     all_data = {}
     
@@ -177,25 +180,25 @@ def create_cdf_comparison_plot():
             
             # Calculate and plot CDF
             x, y = calculate_cdf(latencies)
-            plt.plot(x, y, color=colors[i], linewidth=3, linestyle=line_styles[i], label=label)
+            plt.plot(x, y, color=colors[i], linewidth=pstyle.line, linestyle=line_styles[i], label=label)
         else:
             print(f"No data found for {label}!")
     
     # Set labels and formatting
-    plt.xlabel('Latency (μs)', fontsize=16, fontweight='medium')
-    plt.ylabel('CDF', fontsize=16, fontweight='medium')
+    plt.xlabel('Latency (μs)', fontsize=pstyle.font, fontweight='medium')
+    plt.ylabel('CDF', fontsize=pstyle.font, fontweight='medium')
     # plt.title(f'Tail Latency CDF Comparison ({msg_size}B, {target_clients} Clients)', 
-    #           fontsize=16)
+    #           fontsize=pstyle.font)
     
     # Set tick font size
-    plt.xticks(fontsize=16, fontweight='medium')
-    plt.yticks(fontsize=16, fontweight='medium')
+    plt.xticks(fontsize=pstyle.font, fontweight='medium')
+    plt.yticks(fontsize=pstyle.font, fontweight='medium')
     
     # Add grid - only vertical lines
     plt.grid(True, linestyle='--', alpha=0.7, axis='x')
     
     # Add legend in empty space
-    plt.legend(prop={'size': 13, 'weight': 'medium'},bbox_to_anchor=(0.94, 0.75), loc='center right', ncol=3, framealpha=0.5, columnspacing=0.2) # Middle bottom right
+    plt.legend(prop={'size': pstyle.font, 'weight': 'medium'},bbox_to_anchor=(0.94, 0.75), loc='center right', ncol=3, framealpha=0.5, columnspacing=0.2) # Middle bottom right
     
     # Set axis limits
     plt.xlim(0, 650)
@@ -212,6 +215,7 @@ def create_cdf_comparison_plot():
     # Adjust layout and save
     plt.tight_layout()
     plt.savefig('tail_latency_cdf_fig_17.pdf', bbox_inches='tight', dpi=300)
+    pstyle.report('tail_latency_cdf_fig_17.pdf')
     print(f"\nPlot saved as tail_latency_cdf_fig_17.pdf")
     
     # plt.show()

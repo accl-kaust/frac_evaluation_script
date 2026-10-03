@@ -9,15 +9,17 @@ import mpl_toolkits.axisartist.floating_axes as floating_axes
 import mpl_toolkits.axisartist.grid_helper_curvelinear as grid_helper_curvelinear
 from matplotlib import gridspec
 
-# Use medium text styling throughout the figure.
-import plot_fonts  # noqa: F401  (Helvetica Neue from fonts/, medium weight everywhere)
+import plot_fonts  # Helvetica Neue from fonts/, shared palette and print-size style
+
+# Printed at 0.32\textwidth = 161.3 pt in the paper; its tight-cropped PDF is ~540 pt wide.
+pstyle = plot_fonts.paper_style(printed_width_pt=161.3, cropped_width_pt=539.7)
 
 # Function mapping - reordered to Top-K, Logit, Norm, CNN
 function_ids = [1, 3, 5, 2]  # Top-K, Logit, Norm, CNN
 function_names = ['Top-K', 'Logit', 'Norm', 'CNN']  # Shorter labels for x-axis
 function_legend_names = ['Top-K', 'Logit', 'Norm', 'CNN']  # Full names for legend
 # Replace with color-blind friendly palette (Okabe-Ito color scheme)
-function_colors = ['#003355', '#E67300', '#006B52', '#E6A3D0']  # Blue, Vermilion, Bluish green, Reddish purple
+function_colors = plot_fonts.CATEGORY_PALETTE[:4]  # Top-K, Logit, Norm, CNN (category colours, same as fig 18)
 # Add hatching patterns for grayscale distinguishability
 #function_hatches = ['//', '\\\\', '||', '++']  # Diagonal, reverse diagonal, vertical, cross patterns
 
@@ -199,10 +201,10 @@ def create_mixed_figure():
                     color=function_colors[i],
                     #hatch=function_hatches[i],
                     yerr=single_std,
-                    capsize=5,
+                    error_kw=pstyle.error_kw,
                     label=function_names[i],
                     edgecolor='black',  # Add black border
-                    linewidth=1.5       # Make border thicker
+                    linewidth=pstyle.edge       # Make border thicker
                 )
             
             # Plot right part (Mixed workloads) - full height
@@ -214,9 +216,9 @@ def create_mixed_figure():
                     color=function_colors[i],
                     #hatch=function_hatches[i],
                     yerr=mixed_std,
-                    capsize=5,
+                    error_kw=pstyle.error_kw,
                     edgecolor='black',  # Add black border
-                    linewidth=1.5       # Make border thicker
+                    linewidth=pstyle.edge       # Make border thicker
                 )
         else:  # CNN
             # For CNN, show truncated bars in bottom subplot
@@ -232,7 +234,7 @@ def create_mixed_figure():
                     capsize=0,  # No error bars for truncated bars
                     label=function_names[i],
                     edgecolor='black',
-                    linewidth=1.5
+                    linewidth=pstyle.edge
                 )
                 
                 # Plot full bar in top subplot if it extends above high_min
@@ -244,10 +246,10 @@ def create_mixed_figure():
                         color=function_colors[i],
                         #hatch=function_hatches[i],
                         yerr=single_std if single_mean < high_max else 0,
-                        capsize=5,
+                        error_kw=pstyle.error_kw,
                         bottom=high_min,
                         edgecolor='black',
-                        linewidth=1.5
+                        linewidth=pstyle.edge
                     )
             
             # Plot right part (Mixed CNN) - truncated to low_max
@@ -261,7 +263,7 @@ def create_mixed_figure():
                     #hatch=function_hatches[i],
                     capsize=0,  # No error bars for truncated bars
                     edgecolor='black',
-                    linewidth=1.5
+                    linewidth=pstyle.edge
                 )
                 
                 # Plot full bar in top subplot if it extends above high_min
@@ -273,16 +275,16 @@ def create_mixed_figure():
                         color=function_colors[i],
                        #hatch=function_hatches[i],
                         yerr=mixed_std if mixed_mean < high_max else 0,
-                        capsize=5,
+                        error_kw=pstyle.error_kw,
                         bottom=high_min,
                         edgecolor='black',
-                        linewidth=1.5
+                        linewidth=pstyle.edge
                     )
 
     # Draw a vertical line to separate single from mixed workloads on both subplots
     separator = (left_positions[-1] + right_positions[0]) / 2
-    ax_top.axvline(x=separator, color='black', linestyle='--', linewidth=2)
-    ax_bottom.axvline(x=separator, color='black', linestyle='--', linewidth=2)
+    ax_top.axvline(x=separator, color='black', linestyle='--', linewidth=pstyle.edge)
+    ax_bottom.axvline(x=separator, color='black', linestyle='--', linewidth=pstyle.edge)
     
     # Set the same x limits for both subplots
     x_min = min(left_positions) - bar_width
@@ -292,7 +294,7 @@ def create_mixed_figure():
     
     # Add cut-out marks to show the broken y-axis
     d = 0.015  # Size of diagonal lines in axes coordinates
-    kwargs = dict(transform=ax_top.transAxes, color='k', clip_on=False)
+    kwargs = dict(transform=ax_top.transAxes, color='k', clip_on=False, linewidth=pstyle.edge)
     ax_top.plot((-d, +d), (-d, +d), **kwargs)        # Bottom-left diagonal
     ax_top.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # Bottom-right diagonal
     
@@ -321,11 +323,11 @@ def create_mixed_figure():
                        xycoords=ax_bottom.get_xaxis_transform(),
                        xytext=(0, -(xtick_pad + 2)), textcoords='offset points',
                        horizontalalignment='center', verticalalignment='top',
-                       fontsize=18, fontweight='medium')
+                       fontsize=pstyle.font, fontweight='medium')
     
     # Set the ticks and labels
     ax_bottom.set_xticks(all_positions)
-    ax_bottom.set_xticklabels(all_labels, fontsize=20, fontweight='medium')
+    ax_bottom.set_xticklabels(all_labels, fontsize=pstyle.font, fontweight='medium')
     ax_bottom.tick_params(axis='x', pad=xtick_pad)
     ax_top.set_xticks([])  # No x ticks on top subplot
     
@@ -334,8 +336,8 @@ def create_mixed_figure():
     ax_bottom.yaxis.set_major_formatter(ScalarFormatter())
     
     # Set y-axis tick label font size to 17
-    ax_top.tick_params(axis='y', labelsize=20)
-    ax_bottom.tick_params(axis='y', labelsize=20)
+    ax_top.tick_params(axis='y', labelsize=pstyle.font)
+    ax_bottom.tick_params(axis='y', labelsize=pstyle.font)
     for tick in ax_top.get_yticklabels():
         tick.set_fontweight('medium')
     for tick in ax_bottom.get_yticklabels():
@@ -343,7 +345,7 @@ def create_mixed_figure():
     
     # Set y-axis label only on bottom subplot, positioned to cover both subplots
     fig.text(
-        0.0, 0.5, 'Latency (μs)', va='center', rotation='vertical', fontsize=20, fontweight='medium'
+        0.0, 0.5, 'Latency (μs)', va='center', rotation='vertical', fontsize=pstyle.font, fontweight='medium'
     )
     
     # Add more space at top for legend and bottom for x-axis labels, without changing total figure size
@@ -356,13 +358,13 @@ def create_mixed_figure():
     fig.legend(
         [plt.Rectangle((0, 0), 1, 1, fc=function_colors[i], 
                        #hatch=function_hatches[i], 
-                      edgecolor='black', linewidth=1.5) for i in range(len(function_legend_names))],
+                      edgecolor='black', linewidth=pstyle.edge) for i in range(len(function_legend_names))],
         function_legend_names,
         loc='center left',
         bbox_to_anchor=(axes_left_x + 0.01, gap_center_y + 0.075),  # Just inside the left edge, shifted up
         ncol=1,        # One column of four entries
         frameon=True,
-        prop={'size': 17, 'weight': 'medium'},
+        prop={'size': pstyle.font, 'weight': 'medium'},
         labelspacing=0.6,  # Vertical gap between legend rows
         framealpha=0.5,
         columnspacing=0.8,  # Space between columns
@@ -375,6 +377,7 @@ def create_mixed_figure():
     
     # Save plot
     plt.savefig('mixed_workload_fig_14.pdf', bbox_inches='tight')
+    pstyle.report('mixed_workload_fig_14.pdf')
     print("\nPlot saved as mixed_workload_fig_14.pdf")
 
 if __name__ == "__main__":

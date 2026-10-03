@@ -1,7 +1,8 @@
-"""Latency vs application throughput, with and without fRAC (new data, 30-09-2026).
+"""Latency vs application throughput, Transport vs Transport+fRAC (run 2026-10-02T094702).
 
-Data: data/latency_throughput/rr_d_30_m_4096_n_<clients>_C_1_f_0_O_<0|1>.log
-  O_0 = without fRAC (plain TCP stack), O_1 = with fRAC.
+Data: data/<run>/rr_d_30_m_4096_n_<clients>_C_1_f_0_O_<0|1>.log
+  O_0 = Transport (plain TCP stack), O_1 = Transport+fRAC.
+  <run> defaults to DATA_DIR below; pass another directory as the first argument.
   Each log is one 30 s run (seconds 0-29) with one "RR .<thread>" line per
   client thread per second and one "RR Total-Throughput" line per second.
 
@@ -14,13 +15,17 @@ Output: latency_throughput_fig_13.pdf
 """
 import os
 import re
+import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-import plot_fonts  # noqa: F401  (Helvetica Neue from fonts/, medium weight everywhere)
+import plot_fonts  # Helvetica Neue from fonts/, shared palette and print-size style
 
-DATA_DIR = "data/latency_throughput"
+# Printed at 0.32\textwidth = 161.3 pt in the paper; its tight-cropped PDF is ~545 pt wide.
+pstyle = plot_fonts.paper_style(printed_width_pt=161.3, cropped_width_pt=544.5)
+
+DATA_DIR = "data/2026-10-02T094702"   # default run; override with argv[1]
 FILE_PREFIX = "rr_d_30_m_4096_n_"   # 30 s runs, 4096 B requests
 RUN_SECONDS = 30
 KEEP_LAST_SECONDS = 20               # analyse seconds 10-29 only
@@ -106,38 +111,46 @@ def print_table(name, points):
 
 
 def plot_throughput_vs_latency(with_frac, without_frac):
-    plt.figure(figsize=(8, 4.5))
+    plt.figure(figsize=(8, 4.65))  # 4.65 in keeps the printed height at ~90 pt with 6 pt text
 
     for points, marker, color, label, alpha in (
-        (with_frac, 'o-', 'blue', 'With fRAC', 0.2),
-        (without_frac, '^-', '#D55E00', 'Without fRAC', 0.35),
+        (without_frac, plot_fonts.M_BASE, plot_fonts.C_BASE, 'Transport', 0.35),
+        (with_frac, plot_fonts.M_OURS, plot_fonts.C_OURS, 'Transport+fRAC', 0.2),
     ):
         x = [p[0] for p in points]
         med = [p[1] for p in points]
         p25 = [p[2] for p in points]
         p75 = [p[3] for p in points]
-        plt.plot(x, med, marker, color=color, label=label, markersize=10, linewidth=2)
+        plt.plot(x, med, marker=marker, linestyle='-', color=color, label=label,
+                 markersize=pstyle.marker, linewidth=pstyle.line)
         if len(x) > 2:
-            plt.fill_between(x, p25, p75, color=color, alpha=alpha)  # 25th-75th percentile
+            plt.fill_between(x, p25, p75, color=color, alpha=alpha, linewidth=0)  # 25th-75th percentile
 
-    plt.xlabel('Application Throughput (Gbps)', fontsize=20, fontweight='medium')
-    plt.ylabel('Latency (μs)', fontsize=20, fontweight='medium')
-    plt.xticks(fontsize=20, fontweight='medium')
-    plt.yticks(fontsize=20, fontweight='medium')
-    plt.legend(prop={'size': 20, 'weight': 'medium'}, loc='upper left', ncol=1,
-               bbox_to_anchor=(0, 1.02), frameon=False, columnspacing=0.5, markerscale=1.3)
+    plt.xlabel('Application Throughput (Gbps)', fontsize=pstyle.font, fontweight='medium')
+    plt.ylabel('Latency (μs)', fontsize=pstyle.font, fontweight='medium')
+    plt.xticks(fontsize=pstyle.font, fontweight='medium')
+    plt.yticks(fontsize=pstyle.font, fontweight='medium')
+    # Legend lists Transport+fRAC first, then Transport (reverse of the plotting order,
+    # which keeps the fRAC line drawn on top).
+    handles, labels = plt.gca().get_legend_handles_labels()
+    plt.legend(handles[::-1], labels[::-1], prop={'size': pstyle.font, 'weight': 'medium'},
+               loc='upper left', ncol=1, bbox_to_anchor=(0, 1.02), frameon=False,
+               columnspacing=0.5, markerscale=1.3)
     plt.tight_layout()
     plt.savefig('latency_throughput_fig_13.pdf', bbox_inches='tight', dpi=300)
+    pstyle.report('latency_throughput_fig_13.pdf')
 
 
 if __name__ == "__main__":
-    with_frac = collect(DATA_DIR, "O_1.log")        # O_1 = with fRAC
-    without_frac = collect(DATA_DIR, "O_0.log")     # O_0 = without fRAC
+    data_dir = sys.argv[1] if len(sys.argv) > 1 else DATA_DIR
+    with_frac = collect(data_dir, "O_1.log")        # O_1 = Transport+fRAC
+    without_frac = collect(data_dir, "O_0.log")     # O_0 = Transport
 
+    print(f"Data: {data_dir}")
     print(f"Seconds {FIRST_SECOND}-{RUN_SECONDS - 1} of each run; latency = median of per-thread avg, "
           f"band = p25-p75, throughput = mean of per-second total write")
-    print_table("With fRAC (O_1)", with_frac)
-    print_table("Without fRAC (O_0)", without_frac)
+    print_table("Transport (O_0)", without_frac)
+    print_table("Transport+fRAC (O_1)", with_frac)
 
     if with_frac and without_frac:
         plot_throughput_vs_latency(with_frac, without_frac)

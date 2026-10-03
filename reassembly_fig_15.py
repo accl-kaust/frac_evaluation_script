@@ -5,13 +5,16 @@ import os
 import numpy as np
 from matplotlib.patches import Patch
 
-import plot_fonts  # noqa: F401  (Helvetica Neue from fonts/, medium weight everywhere)
+import plot_fonts  # Helvetica Neue from fonts/, shared palette and print-size style
+
+# Printed at 0.32\textwidth = 161.3 pt in the paper; its tight-cropped PDF is ~545 pt wide.
+pstyle = plot_fonts.paper_style(printed_width_pt=161.3, cropped_width_pt=544.5)
 
 # Define function names and colors
 functions = [1, 3, 5]  # Top-K, Logit Transform, Normalization
 function_names = ["Top-K", "Logit", "Norm"]
 # Replace with color-blind friendly palette (Okabe-Ito color scheme)
-colors = ['#0072B2', '#D55E00', '#009E73']  # Blue, Vermilion, Bluish green
+colors = plot_fonts.PALETTE[:3]
 
 # Target fragment sizes
 target_fragments = [1, 2, 4]  # 1KB, 2KB, 4KB
@@ -120,16 +123,19 @@ def collect_data_for_plot(directory):
 
 
 def create_grouped_bar_chart(data, directory):
-    """Create a grouped bar chart comparing 'With' and 'Without' reassembly."""
-    fig, ax = plt.subplots(figsize=(8, 5.5))
+    """One bar per (function, fragments): the solid bar is the measured latency with
+    reassembly; the emulated latency without reassembly is the unfilled dashed outline
+    drawn at the same position (visible where it extends above the solid bar)."""
+    fig, ax = plt.subplots(figsize=(8, 5.69))  # 5.69 in keeps the printed height at ~90 pt with 6 pt text
 
-    # Colors for "With" and "Without" reassembly
-    colors = {'with': '#0072B2', 'without': '#AACCFF'} # Light blue for 'without'
+    # Solid bar colour (with reassembly); the emulated "without" result is a colourless dashed outline.
+    colors = {'with': plot_fonts.C_OURS}
 
 
     n_functions = len(functions)
     n_fragments = len(target_fragments)
-    bar_width = 0.35
+    bar_width = 0.35          # spacing unit (slot = 2.5 x, group = 3.5 x per fragment count)
+    single_width = 0.56       # width of the single bar drawn in each slot
 
     group_width = n_fragments * (bar_width * 3.5)
 
@@ -152,29 +158,27 @@ def create_grouped_bar_chart(data, directory):
         for j, fragment in enumerate(target_fragments):
             pos = group_center + j * bar_width * 2.5
 
-            # --- "With Reassembly" bar ---
+            # --- "Without Reassembly" (emulated): unfilled dashed outline, drawn first ---
+            if mean_frag1 > 0:
+                mean_without = mean_frag1 * fragment
+                # No error bar on the emulated value: it is derived (frag-1 latency x fragments).
+                ax.bar(pos, mean_without, single_width, fill=False, edgecolor='black',
+                       linestyle='--', linewidth=pstyle.edge, zorder=2)
+                if mean_without > max_latency:
+                    max_latency = mean_without
+
+            # --- "With Reassembly": solid bar on top (hides the outline below its top edge) ---
             latencies_with = data[function][fragment]
             if latencies_with:
                 mean_with = np.mean(latencies_with)
                 std_with = np.std(latencies_with)
-                ax.bar(pos - bar_width/2, mean_with, bar_width,
-                       color=colors['with'], edgecolor='black', linewidth=1.5)
-                ax.errorbar(pos - bar_width/2, mean_with, yerr=std_with,
-                            fmt='none', ecolor='black', elinewidth=1.5, capsize=5)
+                ax.bar(pos, mean_with, single_width,
+                       color=colors['with'], edgecolor='black', linewidth=pstyle.edge, zorder=3)
+                ax.errorbar(pos, mean_with, yerr=std_with, fmt='none', ecolor='black',
+                            elinewidth=pstyle.edge, capsize=pstyle.cap, capthick=pstyle.edge, zorder=4)
                 if mean_with + std_with > max_latency:
                     max_latency = mean_with + std_with
 
-            # --- "Without Reassembly" bar ---
-            if mean_frag1 > 0:
-                mean_without = mean_frag1 * fragment
-                std_without = std_frag1 * fragment
-                ax.bar(pos + bar_width/2, mean_without, bar_width,
-                       color=colors['without'], edgecolor='black', linewidth=1.5, hatch='//')
-                ax.errorbar(pos + bar_width/2, mean_without, yerr=std_without,
-                            fmt='none', ecolor='black', elinewidth=1.5, capsize=5)
-                if mean_without + std_without > max_latency:
-                    max_latency = mean_without + std_without
-            
             all_tick_positions.append(pos)
     
     # Add vertical lines to separate function groups
@@ -183,11 +187,11 @@ def create_grouped_bar_chart(data, directory):
         last_bar_of_group = group_positions[i] + (n_fragments - 1) * bar_width * 2.5
         first_bar_of_next_group = group_positions[i+1]
         line_pos = (last_bar_of_group + first_bar_of_next_group) / 2
-        ax.axvline(x=line_pos, color='black', linestyle='--', linewidth=2)
+        ax.axvline(x=line_pos, color='black', linestyle='--', linewidth=pstyle.edge)
 
     # --- Customize plot ---
     ax.set_xticks(all_tick_positions)
-    ax.set_xticklabels([str(f) for f in target_fragments] * n_functions, fontsize=20, fontweight='medium')
+    ax.set_xticklabels([str(f) for f in target_fragments] * n_functions, fontsize=pstyle.font, fontweight='medium')
     
     # Add function names below fragment numbers
     for i, func_name in enumerate(function_names):
@@ -200,15 +204,15 @@ def create_grouped_bar_chart(data, directory):
             func_name,
             ha='center',
             va='top',
-            fontsize=20,
+            fontsize=pstyle.font,
             fontweight='medium',
             transform=ax.get_xaxis_transform(),
         )
 
     # Set X and Y labels
-    ax.set_xlabel("Fragments per Request", fontsize=20, fontweight='medium', labelpad=32)
-    ax.set_ylabel("Latency(μs)", fontsize=20, fontweight='medium', y=0.5)
-    ax.tick_params(axis='y', labelsize=20)
+    ax.set_xlabel("Fragments per Request", fontsize=pstyle.font, fontweight='medium', labelpad=32)
+    ax.set_ylabel("Latency(μs)", fontsize=pstyle.font, fontweight='medium', y=0.5)
+    ax.tick_params(axis='y', labelsize=pstyle.font)
     for tick in ax.get_yticklabels():
         tick.set_fontweight('medium')
 
@@ -217,15 +221,16 @@ def create_grouped_bar_chart(data, directory):
 
     # Add legend
     legend_patches = [
-        Patch(facecolor=colors['with'], label='With Reassembly', edgecolor='black', linewidth=1.5),
-        Patch(facecolor=colors['without'], label='Without Reassembly (emu)', edgecolor='black', linewidth=1.5, hatch='//')
+        Patch(facecolor=colors['with'], label='With Reassembly', edgecolor='black', linewidth=pstyle.edge),
+        Patch(facecolor='none', label='Without Reassembly (emu)', edgecolor='black', linestyle='--', linewidth=pstyle.edge),
     ]
-    ax.legend(handles=legend_patches, loc='upper left', ncol=1, frameon=True, framealpha=0.7, prop={'size': 20, 'weight': 'medium'}, 
+    ax.legend(handles=legend_patches, loc='upper left', ncol=1, frameon=True, framealpha=0.7, prop={'size': pstyle.font, 'weight': 'medium'}, 
               bbox_to_anchor=(0.0, 1.00))
     
     plt.tight_layout(rect=[0, 0.18, 1, 1])
 
     plt.savefig("reassembly_fig_15.pdf", bbox_inches='tight')
+    pstyle.report("reassembly_fig_15.pdf")
     print("Plot saved as reassembly_fig_15.pdf")
     plt.close()
 

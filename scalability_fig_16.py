@@ -8,7 +8,10 @@ import glob
 import matplotlib.ticker as ticker
 import pickle
 
-import plot_fonts  # noqa: F401  (Helvetica Neue from fonts/, medium weight everywhere)
+import plot_fonts  # Helvetica Neue from fonts/, shared palette and print-size style
+
+# Printed at \textwidth = 504 pt in the paper; its tight-cropped PDF is ~1275 pt wide.
+pstyle = plot_fonts.paper_style(printed_width_pt=504.0, cropped_width_pt=1275.2)
 
 # ---------------------------------------------------------------------------
 # Data processing helpers (LogProcessor, RawLatencyProcessor, the cache
@@ -547,12 +550,12 @@ def create_separate_accel_plots(base_directory):
     data_dict = process_all_configurations_cached(base_directory)
     
     # Create figure with 6 subplots horizontally
-    fig, axes = plt.subplots(1, 6, figsize=(18, 3.5), sharey=True)
+    fig, axes = plt.subplots(1, 6, figsize=(18, 3.56), sharey=True)  # 3.56 in keeps the printed height at ~99 pt
     
     # Colors - one color per device type
-    color_accel = '#004D7A'  # Blue for Accel
-    color_cpu = '#D55E00'    # Orange for CPU
-    color_dpu = '#D98CBF'    # Pink for DPU
+    color_accel = plot_fonts.C_OURS   # fRAC
+    color_cpu = plot_fonts.C_BASE     # CPU
+    color_dpu = plot_fonts.C_THIRD    # DPU
     
     # Configuration: (accel_count, accel_key, cpu_key, dpu_key, msg_size, title)
     plot_configs = [
@@ -616,29 +619,29 @@ def create_separate_accel_plots(base_directory):
         # Plot Accel (blue)
         if clients_accel and latency_accel:
             ax.fill_between(clients_accel, p25_accel, p75_accel, 
-                           alpha=0.3, color=color_accel)
+                           alpha=0.3, color=color_accel, linewidth=0)
             ax.plot(clients_accel, latency_accel, marker='s', linestyle='-', 
-                   color=color_accel, linewidth=2, markersize=8)
+                   color=color_accel, linewidth=pstyle.line, markersize=pstyle.marker)
         
         # Plot CPU (orange)
         if clients_cpu and latency_cpu:
             ax.fill_between(clients_cpu, p25_cpu, p75_cpu, 
-                           alpha=0.2, color=color_cpu)
+                           alpha=0.2, color=color_cpu, linewidth=0)
             ax.plot(clients_cpu, latency_cpu, marker='^', linestyle='-', 
-                   color=color_cpu, linewidth=2, markersize=8)
+                   color=color_cpu, linewidth=pstyle.line, markersize=pstyle.marker)
         
         # Plot DPU (pink)
         if clients_dpu and latency_dpu:
             ax.fill_between(clients_dpu, p25_dpu, p75_dpu, 
-                           alpha=0.2, color=color_dpu)
+                           alpha=0.2, color=color_dpu, linewidth=0)
             ax.plot(clients_dpu, latency_dpu, marker='o', linestyle='-', 
-                   color=color_dpu, linewidth=2, markersize=6)
+                   color=color_dpu, linewidth=pstyle.line, markersize=pstyle.marker)
         
         # Set title
-        ax.set_title(title, fontsize=16, fontweight='medium')
+        ax.set_title(title, fontsize=pstyle.font, fontweight='medium')
         
         # Set x-axis label
-        ax.set_xlabel('Clients', fontsize=16, fontweight='medium')
+        ax.set_xlabel('Clients', fontsize=pstyle.font, fontweight='medium')
         
         # Turn off all grid lines
         ax.grid(False)
@@ -653,7 +656,7 @@ def create_separate_accel_plots(base_directory):
         ax.set_xticks(sorted(list(all_clients)))
         
         # Set tick font size
-        ax.tick_params(axis='both', which='major', labelsize=14)
+        ax.tick_params(axis='both', which='major', labelsize=pstyle.font)
         for tick in ax.get_xticklabels() + ax.get_yticklabels():
             tick.set_fontweight('medium')
         
@@ -673,7 +676,7 @@ def create_separate_accel_plots(base_directory):
                 ax.annotate(f'{int(latencies[i])}', 
                            xy=(client_count, latencies[i]), 
                            xytext=(x_pos, y_pos),
-                           fontsize=14, fontweight='medium', color=color,
+                           fontsize=pstyle.font, fontweight='medium', color=color,
                            ha=ha, va=va)
         
         # Special handling for first two figures (1 Accel) - CPU and DPU lines are very close
@@ -719,7 +722,7 @@ def create_separate_accel_plots(base_directory):
             ax.tick_params(axis='y', which='minor', left=False, right=False)
     
     # Set y-axis label only for left subplot
-    axes[0].set_ylabel('Latency (μs)', fontsize=16, fontweight='medium')
+    axes[0].set_ylabel('Latency (μs)', fontsize=pstyle.font, fontweight='medium')
     
     # Remove y-axis ticks from all but first subplot
     for ax in axes[1:]:
@@ -727,9 +730,9 @@ def create_separate_accel_plots(base_directory):
     
     # Create shared legend at the top
     legend_elements = [
-        plt.Line2D([0], [0], marker='s', color=color_accel, linestyle='-', linewidth=2, markersize=10, label='fRAC'),
-        plt.Line2D([0], [0], marker='^', color=color_cpu, linestyle='-', linewidth=2, markersize=10, label='CPU'),
-        plt.Line2D([0], [0], marker='o', color=color_dpu, linestyle='-', linewidth=2, markersize=8, label='DPU'),
+        plt.Line2D([0], [0], marker='s', color=color_accel, linestyle='-', linewidth=pstyle.line, markersize=pstyle.marker, label='fRAC'),
+        plt.Line2D([0], [0], marker='^', color=color_cpu, linestyle='-', linewidth=pstyle.line, markersize=pstyle.marker, label='CPU'),
+        plt.Line2D([0], [0], marker='o', color=color_dpu, linestyle='-', linewidth=pstyle.line, markersize=pstyle.marker, label='DPU'),
     ]
     fig.legend(
         handles=legend_elements,
@@ -737,7 +740,7 @@ def create_separate_accel_plots(base_directory):
         loc='upper center',
         ncol=3,
         frameon=False,
-        prop={'size': 16, 'weight': 'medium'},
+        prop={'size': pstyle.font, 'weight': 'medium'},
         columnspacing=2.0,
         handletextpad=0.5
     )
@@ -747,6 +750,7 @@ def create_separate_accel_plots(base_directory):
     
     # Save figure
     plt.savefig('scalability_fig_16.pdf', bbox_inches='tight', dpi=300)
+    pstyle.report('scalability_fig_16.pdf')
     print("\nPlot saved as scalability_fig_16.pdf")
 
 
