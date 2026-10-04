@@ -126,6 +126,7 @@ def plot_throughput_vs_latency(with_frac, without_frac):
         if len(x) > 2:
             plt.fill_between(x, p25, p75, color=color, alpha=alpha, linewidth=0)  # 25th-75th percentile
 
+    plt.ylim(bottom=5.5)  # keep the lines clear of the x axis
     plt.xlabel('Application Throughput (Gbps)', fontsize=pstyle.font, fontweight='medium')
     plt.ylabel('Latency (μs)', fontsize=pstyle.font, fontweight='medium')
     plt.xticks(fontsize=pstyle.font, fontweight='medium')
