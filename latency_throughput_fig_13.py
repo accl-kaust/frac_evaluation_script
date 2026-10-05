@@ -25,7 +25,7 @@ import plot_fonts  # Helvetica Neue from fonts/, shared palette and print-size s
 # Printed at 0.32\textwidth = 161.3 pt in the paper; its tight-cropped PDF is ~545 pt wide.
 pstyle = plot_fonts.paper_style(printed_width_pt=161.3, cropped_width_pt=544.5)
 
-DATA_DIR = "data/2026-10-02T094702"   # default run; override with argv[1]
+DATA_DIR = "data/latency_throughput"   # default run; override with argv[1]
 FILE_PREFIX = "rr_d_30_m_4096_n_"   # 30 s runs, 4096 B requests
 RUN_SECONDS = 30
 KEEP_LAST_SECONDS = 20               # analyse seconds 10-29 only
