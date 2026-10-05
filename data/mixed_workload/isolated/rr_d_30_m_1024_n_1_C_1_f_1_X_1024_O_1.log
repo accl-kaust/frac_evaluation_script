@@ -1,0 +1,71 @@
+:: TPA_CFG='net { name=enp33s0f1np1; mac=38:25:f3:79:98:2f; ip=172.24.1.3; mask=255.255.255.0; gw=10.0.0.1; ip6=fe80::3a25:f3ff:fe79:982f/64; } dpdk { pci=0000:21:00.1; } tcp {tso = 0; } dpdk { socket-mem = 8192; mbuf_mem_size = 6GB; }'
+:: cmd=/home/acclnode14/libtpa/build/bin/app/fperf -c 172.24.1.52 -p 2888 -S 0 -t rr -d 30 -n 1 -m 1024 -X 1024 -R 64 -C 1 -Z 1 -K 0 -L 1 -D /tmp/fe0givl4cd
+EAL: Detected CPU lcores: 64
+EAL: Detected NUMA nodes: 1
+EAL: Detected static linkage of DPDK
+EAL: Selected IOVA mode 'VA'
+EAL: Probe PCI driver: mlx5_pci (15b3:101d) device: 0000:21:00.1 (socket 0)
+    0 RR .0 min=7.42us avg=7.70us max=42.50us read(Gbits/sec)=0.065 write(Gbits/sec)=1.035 count=126335
+    0 RR Total-Throughput read(Gbits/sec)=0.065 write(Gbits/sec)=1.035
+    1 RR .0 min=7.42us avg=7.65us max=31.23us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129033
+    1 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+    2 RR .0 min=7.42us avg=7.65us max=33.79us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129024
+    2 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+    3 RR .0 min=7.42us avg=7.66us max=32.77us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=128978
+    3 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+    4 RR .0 min=7.42us avg=7.66us max=32.51us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=128984
+    4 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+    5 RR .0 min=7.42us avg=7.66us max=31.49us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=128974
+    5 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+    6 RR .0 min=7.42us avg=7.66us max=31.74us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129015
+    6 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+    7 RR .0 min=7.42us avg=7.65us max=34.82us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129045
+    7 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+    8 RR .0 min=7.42us avg=7.65us max=44.29us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129044
+    8 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+    9 RR .0 min=7.42us avg=7.66us max=31.49us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129021
+    9 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+   10 RR .0 min=7.42us avg=7.66us max=33.28us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129012
+   10 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+   11 RR .0 min=7.42us avg=7.66us max=26.11us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129006
+   11 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+   12 RR .0 min=7.42us avg=7.66us max=31.74us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129033
+   12 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+   13 RR .0 min=7.42us avg=7.66us max=31.23us read(Gbits/sec)=0.066 write(Gbits/sec)=1.056 count=128950
+   13 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.056
+   14 RR .0 min=7.42us avg=7.66us max=32.77us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129013
+   14 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+   15 RR .0 min=7.42us avg=7.66us max=29.44us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129033
+   15 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+   16 RR .0 min=7.42us avg=7.66us max=31.23us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129025
+   16 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+   17 RR .0 min=7.42us avg=7.66us max=31.49us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129050
+   17 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+   18 RR .0 min=7.42us avg=7.65us max=31.23us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129072
+   18 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+   19 RR .0 min=7.42us avg=7.66us max=23.55us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129013
+   19 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+   20 RR .0 min=7.42us avg=7.65us max=29.95us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129057
+   20 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+   21 RR .0 min=7.42us avg=7.66us max=37.63us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129011
+   21 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+   22 RR .0 min=7.42us avg=7.65us max=33.79us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129051
+   22 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+   23 RR .0 min=7.42us avg=7.65us max=28.93us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129063
+   23 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+   24 RR .0 min=7.42us avg=7.66us max=32.26us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129042
+   24 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+   25 RR .0 min=7.42us avg=7.65us max=30.21us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129040
+   25 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+   26 RR .0 min=7.42us avg=7.66us max=36.35us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129029
+   26 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+   27 RR .0 min=7.42us avg=7.65us max=32.51us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129037
+   27 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+   28 RR .0 min=7.42us avg=7.66us max=29.70us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=129045
+   28 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+   29 RR .0 min=7.42us avg=7.66us max=121.34us read(Gbits/sec)=0.066 write(Gbits/sec)=1.057 count=128973
+   29 RR Total-Throughput read(Gbits/sec)=0.066 write(Gbits/sec)=1.057
+
+---
+ 0 nr_conn=1 nr_zero_io_conn=0
+exiting client: 0

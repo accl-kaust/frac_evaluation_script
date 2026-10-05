@@ -5,7 +5,7 @@ __pycache__/
 # macOS
 .DS_Store
 
-# Raw scalability traces (2.4 GB, 1200 files). Tracked compressed as
+# Raw scalability traces (6.2 GB, 1458 files). Tracked compressed as
 # data/scalability/*.tar.xz instead; run ./unpack_data.sh to extract them.
 data/scalability/top_k_*_inst/
 

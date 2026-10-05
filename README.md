@@ -19,14 +19,19 @@ Run every script from the repository root: each one reads its inputs from
 pip install numpy pandas scipy matplotlib
 ```
 
-The scalability traces (2.4 GB of per-thread latency samples, 1200 files) are
-tracked compressed as `data/scalability/*.tar.xz`. Extract them once with
+The scalability traces (6.2 GB of per-thread latency samples, 1458 files) are
+tracked compressed as `data/scalability/*.tar.xz`, one archive per instance
+count, request size and platform (`_O_1` = fRAC, `_O_2_3` = CPU and DPU).
+Extract them once with
 
 ```sh
 ./unpack_data.sh
 ```
 
-before running `tail_latency_cdf_fig_17.py`. `scalability_fig_16.py` reads the
-committed `data/scalability/processed_latency_cache.txt` and only touches the
-raw traces to fill in entries missing from that cache. The extracted
+before running `tail_latency_cdf_fig_17.py`. The extracted
 `data/scalability/top_k_*_inst/` directories are git-ignored.
+
+`scalability_fig_16.py` reads the committed
+`data/scalability/processed_latency_cache.txt` and only touches the raw traces
+to fill in entries missing from that cache; delete the `*_accel` rows from the
+cache to recompute fRAC, or the `*_cpu` / `*_dpu` rows to recompute CPU / DPU.

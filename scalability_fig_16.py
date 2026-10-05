@@ -103,41 +103,41 @@ class RawLatencyProcessor:
         # print(f"Found {len(txt_files)} .txt files in {self.directory_path}")
         
         try:
-            all_latencies_ns = []
+            per_file = []
             
-            # Process each .txt file
+            # Process each .txt file: one latency sample (ns) per line
             for txt_file in txt_files:
-                # First pass: count total lines
-                total_lines = 0
-                with open(txt_file, 'r') as f:
-                    for line in f:
-                        total_lines += 1
+                # Fast path: pandas' C parser (the files are plain integers,
+                # ~2.5 M lines each). Blank lines become NaN so the line count,
+                # and therefore the warm-up skip below, matches the file exactly.
+                try:
+                    col = pd.read_csv(txt_file, header=None, usecols=[0], skip_blank_lines=False,
+                                      dtype=np.float64, engine='c')[0].to_numpy()
+                except pd.errors.EmptyDataError:
+                    continue
+                except ValueError:
+                    # Non-numeric lines present: parse tolerantly and drop them
+                    col = pd.to_numeric(
+                        pd.read_csv(txt_file, header=None, usecols=[0], skip_blank_lines=False,
+                                    dtype=str, engine='c', na_filter=False)[0],
+                        errors='coerce').to_numpy(dtype=np.float64)
                 
-                # Determine skip count: skip first 10% of file
-                skip_count = total_lines // 4
+                # Skip the first quarter of the file (warm-up), then drop unparsable lines
+                skip_count = len(col) // 4
+                file_latencies_ns = col[skip_count:]
+                file_latencies_ns = file_latencies_ns[~np.isnan(file_latencies_ns)]
                 
-                # Second pass: process the data
-                file_latencies_ns = []
-                with open(txt_file, 'r') as f:
-                    for i, line in enumerate(f):
-                        if i < skip_count:
-                            continue
-                        
-                        try:
-                            latency_ns = float(line.strip())
-                            file_latencies_ns.append(latency_ns)
-                        except ValueError:
-                            continue
-                
-                #print(f"  File {os.path.basename(txt_file)}: {total_lines} total lines, skipped first {skip_count}, used {len(file_latencies_ns)}")
-                all_latencies_ns.extend(file_latencies_ns)
+                #print(f"  File {os.path.basename(txt_file)}: {len(col)} total lines, skipped first {skip_count}, used {len(file_latencies_ns)}")
+                per_file.append(file_latencies_ns)
+            
+            all_latencies_ns = np.concatenate(per_file) if per_file else np.array([])
             
             if len(all_latencies_ns) == 0:
                 print(f"No valid latency data found in directory: {self.directory_path}")
                 return False
             
             # Convert from nanoseconds to microseconds and store for external access
-            self.raw_latencies_us = [lat / 1000.0 for lat in all_latencies_ns]
+            self.raw_latencies_us = all_latencies_ns / 1000.0
             
             # Calculate median and 99th percentile
             self.median_latency = np.median(self.raw_latencies_us)
@@ -279,25 +279,23 @@ def process_data_for_instance_count(base_directory, instance_count, functions, c
                 client_number = thread_count  # No multiplication for CPU
             
             # Collect all latency data from all directories for this thread count
+            # (each directory is parsed once; its raw samples are kept for the
+            # combined percentiles below)
             all_median_latencies = []
             all_p99_latencies = []
+            all_raw_latencies = []
             
             for dir_path in dir_group:
                 processor = RawLatencyProcessor(dir_path)
                 if processor.process_raw_latency_data():
                     all_median_latencies.append(processor.median_latency)
                     all_p99_latencies.append(processor.percentile_99)
+                    all_raw_latencies.append(processor.raw_latencies_us)
             
             if all_median_latencies and all_p99_latencies:
-                # Collect all raw latency data from all directories for this thread count
-                all_raw_latencies = []
-                for dir_path in dir_group:
-                    processor = RawLatencyProcessor(dir_path)
-                    if processor.process_raw_latency_data():
-                        # Use the already processed raw latency data (no duplicate file processing)
-                        all_raw_latencies.extend(processor.raw_latencies_us)
+                all_raw_latencies = np.concatenate(all_raw_latencies) if all_raw_latencies else np.array([])
                 
-                if all_raw_latencies:
+                if len(all_raw_latencies):
                     # Calculate all required percentiles from combined raw data
                     combined_p25 = np.percentile(all_raw_latencies, 25)
                     combined_median = np.percentile(all_raw_latencies, 50)
@@ -569,6 +567,7 @@ def create_separate_accel_plots(base_directory):
     
     # Collect all latencies to set consistent y-axis limits
     all_latencies = []
+    frac_label_below = False  # set when a fRAC label has to sit under its marker
     
     for idx, (accel_count, accel_key, cpu_key, dpu_key, msg_size, title) in enumerate(plot_configs):
         ax = axes[idx]
@@ -660,10 +659,14 @@ def create_separate_accel_plots(base_directory):
         for tick in ax.get_xticklabels() + ax.get_yticklabels():
             tick.set_fontweight('medium')
         
-        # Add annotations for ALL points
+        # Add annotations for ALL points. y_multiplier / va may be a single value
+        # or one value per point.
         def annotate_all_points(clients, latencies, color, y_multiplier, va='top'):
+            n = len(clients)
+            mults = list(y_multiplier) if isinstance(y_multiplier, (list, tuple)) else [y_multiplier] * n
+            vas = list(va) if isinstance(va, (list, tuple)) else [va] * n
             for i, client_count in enumerate(clients):
-                y_pos = latencies[i] * y_multiplier
+                y_pos = latencies[i] * mults[i]
                 if client_count == max(clients):  # Last point
                     x_pos = client_count
                     ha = 'right'
@@ -677,12 +680,34 @@ def create_separate_accel_plots(base_directory):
                            xy=(client_count, latencies[i]), 
                            xytext=(x_pos, y_pos),
                            fontsize=pstyle.font, fontweight='medium', color=color,
-                           ha=ha, va=va)
+                           ha=ha, va=vas[i])
+        
+        # fRAC labels go above the marker: below, they collide with the x-axis
+        # now that fRAC sits at 8-12 us on every panel. Where CPU/DPU data at the
+        # same client count are too close for that (a 6 pt label spans ~x1.7 on
+        # this log axis, the marker another ~x1.15, so the lowest CPU/DPU value -
+        # the p25 band bottom - has to be at least ~1.95x the fRAC value), the
+        # label goes under the marker instead and the y-axis is extended to fit.
+        def frac_placement(clients, latencies, *others):
+            lowest = {}
+            for data in others:
+                for x in data:
+                    lowest[x[0]] = min(lowest.get(x[0], np.inf), x[1])
+            mults, vas = [], []
+            for c, lat in zip(clients, latencies):
+                if lowest.get(c, np.inf) / lat >= 1.95:
+                    mults.append(1.15); vas.append('bottom')
+                else:
+                    mults.append(0.80); vas.append('top')
+            return mults, vas
+        
+        if clients_accel and latency_accel:
+            mults, vas = frac_placement(clients_accel, latency_accel, data_cpu, data_dpu)
+            frac_label_below = frac_label_below or ('top' in vas)
+            annotate_all_points(clients_accel, latency_accel, color_accel, y_multiplier=mults, va=vas)
         
         # Special handling for first two figures (1 Accel) - CPU and DPU lines are very close
         if idx == 0:  # 1 Accel - 1024B
-            if clients_accel and latency_accel:
-                annotate_all_points(clients_accel, latency_accel, color_accel, y_multiplier=0.68, va='top')
             if clients_cpu and latency_cpu:
                 annotate_all_points(clients_cpu, latency_cpu, color_cpu, y_multiplier=1.15, va='bottom')
             if clients_dpu and latency_dpu:
@@ -691,8 +716,6 @@ def create_separate_accel_plots(base_directory):
                 latency_dpu_filtered = [latency_dpu[i] for i, c in enumerate(clients_dpu) if c not in [1, 2, 4]]
                 annotate_all_points(clients_dpu_filtered, latency_dpu_filtered, color_dpu, y_multiplier=1.8, va='bottom')
         elif idx == 1:  # 1 Accel - 4096B - client 2 already filtered from data
-            if clients_accel and latency_accel:
-                annotate_all_points(clients_accel, latency_accel, color_accel, y_multiplier=0.68, va='top')
             if clients_cpu and latency_cpu:
                 annotate_all_points(clients_cpu, latency_cpu, color_cpu, y_multiplier=1.15, va='bottom')
             if clients_dpu and latency_dpu:
@@ -701,9 +724,7 @@ def create_separate_accel_plots(base_directory):
                 latency_dpu_filtered = [latency_dpu[i] for i, c in enumerate(clients_dpu) if c not in [1, 4]]
                 annotate_all_points(clients_dpu_filtered, latency_dpu_filtered, color_dpu, y_multiplier=2, va='bottom')
         else:
-            # Accel below, CPU above, DPU higher above (staggered to avoid overlap)
-            if clients_accel and latency_accel:
-                annotate_all_points(clients_accel, latency_accel, color_accel, y_multiplier=0.72, va='top')
+            # CPU above, DPU higher above (staggered to avoid overlap)
             if clients_cpu and latency_cpu:
                 annotate_all_points(clients_cpu, latency_cpu, color_cpu, y_multiplier=1.20, va='bottom')
             if clients_dpu and latency_dpu:
@@ -711,7 +732,8 @@ def create_separate_accel_plots(base_directory):
     
     # Set log scale and consistent y-axis limits AFTER all data is plotted
     if all_latencies:
-        y_min = min(all_latencies) * 0.6
+        # Labels placed under a fRAC marker reach down to ~0.45x its value
+        y_min = min(all_latencies) * (0.38 if frac_label_below else 0.6)
         y_max = max(all_latencies) * 2.5
         
         for ax in axes:
@@ -755,5 +777,5 @@ def create_separate_accel_plots(base_directory):
 
 
 if __name__ == "__main__":
-    base_directory = "data/scalability"
+    base_directory = "data/scalability"      # raw traces (fRAC O_1, CPU O_2, DPU O_3) + processed_latency_cache.txt
     create_separate_accel_plots(base_directory)

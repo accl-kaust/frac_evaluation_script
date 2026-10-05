@@ -1,0 +1,71 @@
+:: TPA_CFG='net { name=enp33s0f1np1; mac=38:25:f3:79:98:2f; ip=172.24.1.3; mask=255.255.255.0; gw=10.0.0.1; ip6=fe80::3a25:f3ff:fe79:982f/64; } dpdk { pci=0000:21:00.1; } tcp {tso = 0; } dpdk { socket-mem = 8192; mbuf_mem_size = 6GB; }'
+:: cmd=/home/acclnode14/libtpa/build/bin/app/fperf -c 172.24.1.52 -p 2888 -S 0 -t rr -d 30 -n 1 -m 4096 -X 24576 -R 64 -C 1 -Z 1 -K 2 -L 1 -D /tmp/featqlu2nv
+EAL: Detected CPU lcores: 64
+EAL: Detected NUMA nodes: 1
+EAL: Detected static linkage of DPDK
+EAL: Selected IOVA mode 'VA'
+EAL: Probe PCI driver: mlx5_pci (15b3:101d) device: 0000:21:00.1 (socket 0)
+    0 RR .0 min=8601.86us avg=8602.57us max=8617.98us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=114
+    0 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+    1 RR .0 min=8601.86us avg=8602.42us max=8604.93us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+    1 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+    2 RR .0 min=8601.86us avg=8602.38us max=8602.88us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=117
+    2 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+    3 RR .0 min=8601.86us avg=8602.38us max=8603.39us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+    3 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+    4 RR .0 min=8601.86us avg=8602.36us max=8603.14us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+    4 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+    5 RR .0 min=8602.11us avg=8602.44us max=8607.23us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+    5 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+    6 RR .0 min=8602.11us avg=8602.33us max=8603.39us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=117
+    6 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+    7 RR .0 min=8601.86us avg=8602.34us max=8603.14us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+    7 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+    8 RR .0 min=8601.86us avg=8602.31us max=8602.88us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+    8 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+    9 RR .0 min=8601.86us avg=8602.32us max=8602.88us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+    9 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   10 RR .0 min=8601.86us avg=8602.33us max=8606.46us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=117
+   10 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   11 RR .0 min=8601.60us avg=8602.14us max=8602.88us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+   11 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   12 RR .0 min=8601.60us avg=8602.13us max=8602.88us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+   12 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   13 RR .0 min=8601.86us avg=8602.32us max=8603.90us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+   13 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   14 RR .0 min=8601.86us avg=8602.29us max=8602.88us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=117
+   14 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   15 RR .0 min=8601.86us avg=8602.30us max=8602.88us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+   15 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   16 RR .0 min=8601.86us avg=8602.33us max=8603.39us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+   16 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   17 RR .0 min=8601.86us avg=8602.30us max=8602.88us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+   17 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   18 RR .0 min=8601.86us avg=8602.33us max=8603.14us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=117
+   18 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   19 RR .0 min=8601.86us avg=8602.32us max=8602.88us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+   19 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   20 RR .0 min=8601.86us avg=8602.31us max=8602.62us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+   20 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   21 RR .0 min=8601.86us avg=8602.32us max=8603.90us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+   21 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   22 RR .0 min=8601.86us avg=8602.32us max=8602.88us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+   22 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   23 RR .0 min=8601.86us avg=8602.35us max=8602.88us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=117
+   23 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   24 RR .0 min=8601.86us avg=8602.30us max=8602.88us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+   24 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   25 RR .0 min=8601.86us avg=8602.31us max=8603.14us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+   25 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   26 RR .0 min=8601.86us avg=8602.30us max=8602.88us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+   26 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   27 RR .0 min=8601.60us avg=8602.14us max=8602.62us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=117
+   27 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   28 RR .0 min=8601.60us avg=8602.12us max=8602.62us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+   28 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+   29 RR .0 min=8601.60us avg=8602.15us max=8603.39us read(Gbits/sec)=0.000 write(Gbits/sec)=0.023 count=116
+   29 RR Total-Throughput read(Gbits/sec)=0.000 write(Gbits/sec)=0.023
+
+---
+ 0 nr_conn=1 nr_zero_io_conn=0
+exiting client: 0

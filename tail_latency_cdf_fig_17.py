@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import glob
 import os
@@ -38,40 +39,40 @@ class RawLatencyProcessor:
             return False
         
         try:
-            all_latencies_ns = []
+            per_file = []
             
-            # Process each .txt file
+            # Process each .txt file: one latency sample (ns) per line
             for txt_file in txt_files:
-                # First pass: count total lines
-                total_lines = 0
-                with open(txt_file, 'r') as f:
-                    for line in f:
-                        total_lines += 1
+                # Fast path: pandas' C parser (the files are plain integers,
+                # up to ~2.5 M lines each). Blank lines become NaN so the line
+                # count, and therefore the warm-up skip below, matches the file.
+                try:
+                    col = pd.read_csv(txt_file, header=None, usecols=[0], skip_blank_lines=False,
+                                      dtype=np.float64, engine='c')[0].to_numpy()
+                except pd.errors.EmptyDataError:
+                    continue
+                except ValueError:
+                    # Non-numeric lines present: parse tolerantly and drop them
+                    col = pd.to_numeric(
+                        pd.read_csv(txt_file, header=None, usecols=[0], skip_blank_lines=False,
+                                    dtype=str, engine='c', na_filter=False)[0],
+                        errors='coerce').to_numpy(dtype=np.float64)
                 
-                # Determine skip count: skip first 10% of file
-                skip_count = total_lines // 10
+                # Skip the first 10% of the file (warm-up), then drop unparsable lines
+                skip_count = len(col) // 10
+                file_latencies_ns = col[skip_count:]
+                file_latencies_ns = file_latencies_ns[~np.isnan(file_latencies_ns)]
                 
-                # Second pass: process the data
-                file_latencies_ns = []
-                with open(txt_file, 'r') as f:
-                    for i, line in enumerate(f):
-                        if i < skip_count:
-                            continue
-                        
-                        try:
-                            latency_ns = float(line.strip())
-                            file_latencies_ns.append(latency_ns)
-                        except ValueError:
-                            continue
-                
-                all_latencies_ns.extend(file_latencies_ns)
+                per_file.append(file_latencies_ns)
+            
+            all_latencies_ns = np.concatenate(per_file) if per_file else np.array([])
             
             if len(all_latencies_ns) == 0:
                 print(f"No valid latency data found in directory: {self.directory_path}")
                 return False
             
             # Convert from nanoseconds to microseconds and store for external access
-            self.raw_latencies_us = [lat / 1000.0 for lat in all_latencies_ns]
+            self.raw_latencies_us = all_latencies_ns / 1000.0
             
             # Calculate median and 99th percentile
             self.median_latency = np.median(self.raw_latencies_us)
@@ -127,10 +128,10 @@ def collect_latency_data_for_clients(base_directory, instance_count, msg_size, m
         # Check if this directory matches our target thread count
         if processor.thread_count == target_thread_count:
             if processor.process_raw_latency_data():
-                all_latencies.extend(processor.raw_latencies_us)
+                all_latencies.append(processor.raw_latencies_us)
                 print(f"Processed {dir_path}: {len(processor.raw_latencies_us)} latency points")
     
-    return np.array(all_latencies)
+    return np.concatenate(all_latencies) if all_latencies else np.array([])
 
 
 def calculate_cdf(data):
@@ -140,10 +141,9 @@ def calculate_cdf(data):
     return sorted_data, y
 
 
-def create_cdf_comparison_plot():
+def create_cdf_comparison_plot(base_directory="data/scalability"):
     """Create CDF comparison plot for all accelerator and CPU configurations"""
     
-    base_directory = "data/scalability"
     msg_size = 4096
     target_clients = 28
     
@@ -222,4 +222,4 @@ def create_cdf_comparison_plot():
 
 
 if __name__ == "__main__":
-    create_cdf_comparison_plot()
+    create_cdf_comparison_plot("data/scalability")
