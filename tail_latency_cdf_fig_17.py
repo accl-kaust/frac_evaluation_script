@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import glob
 import os
 import re
-from matplotlib.ticker import ScalarFormatter
+from matplotlib.lines import Line2D
 
 import plot_fonts  # Helvetica Neue from fonts/, shared palette and print-size style
 
@@ -142,15 +142,21 @@ def calculate_cdf(data):
 
 
 def create_cdf_comparison_plot(base_directory="data/scalability"):
-    """Create CDF comparison plot for all accelerator and CPU configurations"""
-    
+    """Latency CDF of fRAC, CPU and DPU with 1, 2 and 4 instances each, on a broken x-axis.
+
+    The left panel zooms on 0-15 us, where all three fRAC curves rise (8-14 us); the right
+    panel shows 100-650 us, where the CPU and DPU curves rise. Only the low tails of the
+    CPU/DPU curves (below CDF 0.03) fall in the hidden 15-100 us gap. Panels and cut marks
+    follow azure_trace_fig_18.py so the two figures match side by side in the paper.
+    """
+
     msg_size = 4096
     target_clients = 28
-    
+
     # Define configurations to compare
     configs = [
         (1, 1, "1 Accel"),
-        (2, 1, "2 Accel"), 
+        (2, 1, "2 Accel"),
         (4, 1, "4 Accel"),
         (1, 2, "CPU 1c"),
         (2, 2, "CPU 2c"),
@@ -159,51 +165,108 @@ def create_cdf_comparison_plot(base_directory="data/scalability"):
         (2, 3, "DPU 2c"),
         (4, 3, "DPU 4c")
     ]
-    
+
     # Color-blind friendly palette
     colors = [plot_fonts.C_OURS, plot_fonts.C_BASE, plot_fonts.C_THIRD] * 3  # fRAC, CPU, DPU for each instance count
     line_styles = ['-', '-', '-', '--', '--', '--', ':', ':', ':']  # Solid for Accel, Dashed for CPU, Dotted for DPU
-    
-    # Create the plot
-    plt.figure(figsize=(8, 2.9))  # 2.9 in keeps the printed height at ~83 pt with 6 pt text
-    
-    all_data = {}
-    
-    # Collect data for all configurations
+
+    # Two panels sharing the y-axis. The right panel gets 2.5x the width: it carries six
+    # curves over 550 us plus the nine-entry legend (~98 pt printed, which has to fit in
+    # the 180-575 us band, see below), the left one three curves over 15 us.
+    fig, (ax_left, ax_right) = plt.subplots(1, 2, sharey=True, figsize=(8, 2.9),
+                                            gridspec_kw={'width_ratios': [1, 2.5]})
+
+    all_data = {}   # label -> sorted latencies (us)
+    handles = []
+
+    # Collect data for all configurations and draw each curve on both panels
     for i, (instance_count, machine_type, label) in enumerate(configs):
         print(f"Collecting data for {label} with {msg_size}B and {target_clients} clients...")
         latencies = collect_latency_data_for_clients(base_directory, instance_count, msg_size, machine_type, target_clients)
-        
+
         if len(latencies) > 0:
-            all_data[label] = latencies
             print(f"{label}: {len(latencies)} latency points")
-            
-            # Calculate and plot CDF
             x, y = calculate_cdf(latencies)
-            plt.plot(x, y, color=colors[i], linewidth=pstyle.line, linestyle=line_styles[i], label=label)
+            all_data[label] = x
+            ax_left.plot(x, y, color=colors[i], linewidth=pstyle.curve, linestyle=line_styles[i])
+            ax_right.plot(x, y, color=colors[i], linewidth=pstyle.curve, linestyle=line_styles[i])
+            handles.append(Line2D([0], [0], color=colors[i], linestyle=line_styles[i], lw=pstyle.curve, label=label))
         else:
             print(f"No data found for {label}!")
-    
-    # Set labels and formatting
-    plt.xlabel('Latency (μs)', fontsize=pstyle.font, fontweight='medium')
-    plt.ylabel('CDF', fontsize=pstyle.font, fontweight='medium')
-    # plt.title(f'Tail Latency CDF Comparison ({msg_size}B, {target_clients} Clients)', 
-    #           fontsize=pstyle.font)
-    
-    # Set tick font size
-    plt.xticks(fontsize=pstyle.font, fontweight='medium')
-    plt.yticks(fontsize=pstyle.font, fontweight='medium')
-    
-    # Add grid - only vertical lines
-    plt.grid(True, linestyle='--', alpha=0.7, axis='x')
-    
-    # Add legend in empty space
-    plt.legend(prop={'size': pstyle.font, 'weight': 'medium'},bbox_to_anchor=(0.94, 0.75), loc='center right', ncol=3, framealpha=0.5, columnspacing=0.2) # Middle bottom right
-    
-    # Set axis limits
-    plt.xlim(0, 650)
-    plt.ylim(0, 1)
-    
+
+    # Broken x-axis: left 0-15 us (fRAC), right 100-650 us (CPU, DPU)
+    ax_left.set_xlim(0, 15)
+    ax_left.set_xticks(np.arange(0, 16, 5))
+    ax_right.set_xlim(100, 650)
+    # No label at the right panel's left edge: "100" there would collide with "15" across
+    # the cut and tight_layout would double the gap between the panels (fig 18 likewise
+    # leaves its right panel's edge unlabelled).
+    ax_right.set_xticks(np.arange(200, 651, 100))
+    ax_left.set_ylim(0, 1)
+
+    # Hide the spines between the panels
+    ax_left.spines['right'].set_visible(False)
+    ax_right.spines['left'].set_visible(False)
+    ax_left.yaxis.tick_left()
+    ax_right.yaxis.tick_right()
+    ax_right.yaxis.set_label_position('right')
+
+    # Diagonal cut marks
+    d = .015
+    kwargs = dict(transform=ax_left.transAxes, color='k', clip_on=False, linewidth=pstyle.edge)
+    ax_left.plot((1-d, 1+d), (-d, +d), **kwargs)
+    ax_left.plot((1-d, 1+d), (1-d, 1+d), **kwargs)
+    kwargs.update(transform=ax_right.transAxes)
+    ax_right.plot((-d, +d), (1-d, 1+d), **kwargs)
+    ax_right.plot((-d, +d), (-d, +d), **kwargs)
+
+    # Labels, ticks and grid (one centred x label for both panels, as in fig 18)
+    fig.supxlabel('Latency (μs)', fontsize=pstyle.font, y=0.08, fontweight='medium')
+    ax_left.set_ylabel('CDF', fontsize=pstyle.font, fontweight='medium')
+    for ax in (ax_left, ax_right):
+        ax.grid(True, linestyle='--', alpha=0.7, axis='x')
+        ax.tick_params(axis='both', which='major', labelsize=pstyle.font)
+        for tick in ax.get_xticklabels() + ax.get_yticklabels():
+            tick.set_fontweight('medium')
+
+    # Legend: one column per system (Accel / CPU / DPU), in the upper band of the right
+    # panel (CDF ~0.52-0.97). In that band the panel is empty between the CPU 4c rise
+    # (~175 us) and the DPU / CPU 1c rises (~570 us) except for the vertical step of
+    # CPU 2c at ~385 us, which the half-transparent frame lets show through; this is the
+    # same spot the legend occupied on the single-axis version. The script reports after
+    # layout which curves the legend box touches.
+    legend = ax_right.legend(
+        handles=handles,
+        loc='upper center',
+        bbox_to_anchor=(378, 0.975), bbox_transform=ax_right.transData,  # centre of the 180-575 us band
+        ncol=3,
+        prop={'size': pstyle.font, 'weight': 'medium'},
+        labelspacing=0.3,
+        columnspacing=0.4,
+        handlelength=1.2,
+        handletextpad=0.3,
+        borderpad=0.3,
+        borderaxespad=0.0,
+        framealpha=0.5,
+    )
+
+    plt.tight_layout()
+
+    # Report which curves pass through the legend box
+    fig.canvas.draw()
+    # matplotlib < 3.5 needs the renderer passed explicitly
+    bb = legend.get_window_extent(fig.canvas.get_renderer())
+    inv = ax_right.transData.inverted()
+    (x0, y0), (x1, y1) = inv.transform((bb.x0, bb.y0)), inv.transform((bb.x1, bb.y1))
+    pos_l, pos_r = ax_left.get_position(), ax_right.get_position()
+    fw = fig.get_size_inches()[0] * 72 * pstyle.scale   # figure width in printed pt
+    print(f"Panels (printed pt): left {pos_l.width * fw:.0f}, gap {(pos_r.x0 - pos_l.x1) * fw:.0f}, right {pos_r.width * fw:.0f}")
+    print(f"Legend box: {x0:.0f}-{x1:.0f} μs x CDF {y0:.2f}-{y1:.2f} (right panel)")
+    for label, x in all_data.items():
+        lo, hi = np.quantile(x, [y0, y1])   # where the curve is while inside the legend's CDF band
+        if hi >= x0 and lo <= x1:
+            print(f"  legend covers {label} between {max(lo, x0):.0f} and {min(hi, x1):.0f} μs")
+
     # Print statistics for all configurations
     for label, latencies in all_data.items():
         print(f"\n{label} Statistics:")
@@ -211,14 +274,10 @@ def create_cdf_comparison_plot(base_directory="data/scalability"):
         print(f"  90th percentile: {np.percentile(latencies, 90):.2f} μs")
         print(f"  95th percentile: {np.percentile(latencies, 95):.2f} μs")
         print(f"  99th percentile: {np.percentile(latencies, 99):.2f} μs")
-    
-    # Adjust layout and save
-    plt.tight_layout()
+
     plt.savefig('tail_latency_cdf_fig_17.pdf', bbox_inches='tight', dpi=300)
     pstyle.report('tail_latency_cdf_fig_17.pdf')
     print(f"\nPlot saved as tail_latency_cdf_fig_17.pdf")
-    
-    # plt.show()
 
 
 if __name__ == "__main__":

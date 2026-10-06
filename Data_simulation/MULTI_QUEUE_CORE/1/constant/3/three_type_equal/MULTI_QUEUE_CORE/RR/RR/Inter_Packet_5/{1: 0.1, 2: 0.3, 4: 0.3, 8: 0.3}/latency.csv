@@ -1,0 +1,3 @@
+Client ID,Workload Type,Total Start Time,Total End Time,Total Duration,Response Latency,Total Processing Time,Core Queueing Time
+0,B,0,10.004,10.004,10.004,10.0,0.004
+1,C,0,37.42000000000379,37.42000000000379,5.001363491034091,5.0,32.42000000000379

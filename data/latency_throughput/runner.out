@@ -1,0 +1,32 @@
+09:47:02  latency_throughput: 16 runs, about 13 min, into eval/latency_throughput/results/2026-10-02T094702
+09:47:02  programming example/bypass/frac.bit
+programming /home/balasuk/exp/frac-atc-artifact/example/bypass/frac.bit
+PROGRAM_OK: xcu280_u55c_0
+09:47:43  settling for 10 s
+09:47:56  enp67s0f0np0 (172.24.1.2/24) is up and 172.24.1.52 answers ping
+09:47:56  O_0  n=1  rr_d_30_m_4096_n_1_C_1_f_0_O_0.log
+09:48:36  O_0  n=4  rr_d_30_m_4096_n_4_C_1_f_0_O_0.log
+09:49:17  O_0  n=8  rr_d_30_m_4096_n_8_C_1_f_0_O_0.log
+09:50:00  O_0  n=16  rr_d_30_m_4096_n_16_C_1_f_0_O_0.log
+09:50:47  O_0  n=20  rr_d_30_m_4096_n_20_C_1_f_0_O_0.log
+09:51:35  O_0  n=22  rr_d_30_m_4096_n_22_C_1_f_0_O_0.log
+09:52:24  O_0  n=24  rr_d_30_m_4096_n_24_C_1_f_0_O_0.log
+09:53:13  O_0  n=28  rr_d_30_m_4096_n_28_C_1_f_0_O_0.log
+09:54:05  programming build/frac/bitstreams/jtag/frac.bit
+programming /home/balasuk/exp/frac-atc-artifact/build/frac/bitstreams/jtag/frac.bit
+PROGRAM_OK: xcu280_u55c_0
+09:54:52  settling for 10 s
+09:55:05  enp67s0f0np0 (172.24.1.2/24) is up and 172.24.1.52 answers ping
+09:55:05  loading build/frac/bitstreams/icap/c00_f07.bin into slot 0
+Successfully reconfigured
+query-status is OK
+09:55:06  O_1  n=1  rr_d_30_m_4096_n_1_C_1_f_0_O_1.log
+09:55:45  O_1  n=4  rr_d_30_m_4096_n_4_C_1_f_0_O_1.log
+09:56:27  O_1  n=8  rr_d_30_m_4096_n_8_C_1_f_0_O_1.log
+09:57:10  O_1  n=16  rr_d_30_m_4096_n_16_C_1_f_0_O_1.log
+09:57:56  O_1  n=20  rr_d_30_m_4096_n_20_C_1_f_0_O_1.log
+09:58:44  O_1  n=22  rr_d_30_m_4096_n_22_C_1_f_0_O_1.log
+09:59:33  O_1  n=24  rr_d_30_m_4096_n_24_C_1_f_0_O_1.log
+10:00:23  O_1  n=28  rr_d_30_m_4096_n_28_C_1_f_0_O_1.log
+10:01:14  16 of 16 runs are complete in eval/latency_throughput/results/2026-10-02T094702
+10:01:14  plot with: eval/plot.py latency_throughput --run 2026-10-02T094702

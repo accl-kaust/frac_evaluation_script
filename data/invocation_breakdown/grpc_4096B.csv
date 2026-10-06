@@ -1,0 +1,8 @@
+  4096 B | client_rtt 1011.911 us | mode dataflow | server_process 186 us | xrt_run 73 us | xrt_start 16 us | xrt_wait 57 us | h2d 74 us | d2h 34 us | words 64 | client_e2e 4.048 MB/s
+  4096 B | client_rtt 757.437 us | mode dataflow | server_process 203 us | xrt_run 75 us | xrt_start 11 us | xrt_wait 63 us | h2d 75 us | d2h 49 us | words 64 | client_e2e 5.408 MB/s
+  4096 B | client_rtt 928.192 us | mode dataflow | server_process 201 us | xrt_run 73 us | xrt_start 17 us | xrt_wait 56 us | h2d 75 us | d2h 47 us | words 64 | client_e2e 4.413 MB/s
+  4096 B | client_rtt 737.620 us | mode dataflow | server_process 178 us | xrt_run 71 us | xrt_start 12 us | xrt_wait 59 us | h2d 67 us | d2h 34 us | words 64 | client_e2e 5.553 MB/s
+  4096 B | client_rtt 736.608 us | mode dataflow | server_process 170 us | xrt_run 72 us | xrt_start 12 us | xrt_wait 59 us | h2d 64 us | d2h 29 us | words 64 | client_e2e 5.561 MB/s
+  4096 B | client_rtt 1027.310 us | mode dataflow | server_process 191 us | xrt_run 68 us | xrt_start 10 us | xrt_wait 57 us | h2d 70 us | d2h 49 us | words 64 | client_e2e 3.987 MB/s
+  4096 B | client_rtt 663.650 us | mode dataflow | server_process 162 us | xrt_run 66 us | xrt_start 10 us | xrt_wait 56 us | h2d 60 us | d2h 31 us | words 64 | client_e2e 6.172 MB/s
+  4096 B | client_rtt 837.533 us | mode dataflow | server_process 184 us | xrt_run 71 us | xrt_start 13 us | xrt_wait 58 us | h2d 69 us | d2h 39 us | words 64 | client_e2e 5.020 MB/s

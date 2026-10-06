@@ -24,6 +24,7 @@ needs from (a) the width it is printed at and (b) the width of its tight-cropped
 
     style = plot_fonts.paper_style(printed_width_pt=161.3, cropped_width_pt=568.5)
     plt.plot(x, y, linewidth=style.line, markersize=style.marker)
+    plt.plot(x, cdf, linewidth=style.curve)        # marker-less curve (CDF)
     ax.bar(..., linewidth=style.edge, error_kw=style.error_kw)
 
 ``paper_style()`` also loads the sizes into rcParams, so text, ticks, spines, grids
@@ -92,7 +93,11 @@ C_BASE = '#D55E00'    # vermilion
 C_THIRD = '#D98CBF'   # pink
 PALETTE = [C_OURS, C_BASE, C_THIRD]                        # systems: fRAC, baseline, DPU
 CATEGORY_PALETTE = ['#44AA99', '#7B3294', '#E6AB02', '#8C564B']  # teal, purple, gold, brown
-COMPONENT_PALETTE = ['#EE6677', '#2CA02C', '#DDCC77']           # rose, green, sand
+COMPONENT_PALETTE = ['#EFD999', '#FB9676', '#64903F']           # sand, salmon, green
+# Fig 1 stacks the three components, so they also step in lightness (L* 87 / 72 / 55:
+# network transfer, host-FPGA DMA, accelerator control) and stay apart in greyscale; all
+# three are light enough for black value labels (contrast >= 5.6:1) and >= 36 dE from the
+# seven colours above. Checked for protan/deutan/tritan separation (worst pair dE 10 in OKLab).
 
 # Marker shapes by role (figs 3, 13, 16): ours = square, baseline = triangle, third = circle.
 M_OURS, M_BASE, M_THIRD = 's', '^', 'o'
@@ -102,6 +107,10 @@ PRINT = {
     'font': 6.0,     # every piece of text: ticks, labels, titles, legends, annotations
     'stroke': 0.6,   # every line: data lines, bar/box edges, whiskers, error bars, medians,
                      # dashed separators, spines, tick marks, grid lines, legend frames
+    'curve': 1.0,    # data curves drawn without markers (the CDFs in figs 17 and 18). At
+                     # 0.6 pt a bare curve reads lighter than a 0.6 pt line carrying 3 pt
+                     # markers (figs 13, 16) or a bar with a 0.6 pt edge, so these get a
+                     # heavier stroke; axes, ticks and legend frames stay at 'stroke'.
     'marker': 3.0,   # marker size
     'cap': 1.4,      # error-bar cap size
     'tick': 1.2,     # major tick length and tick-label padding
@@ -121,6 +130,7 @@ class PaperStyle:
         self.font = PRINT['font'] * k
         # One stroke width for everything; the role names are kept so scripts read clearly.
         self.line = self.median = self.edge = self.axes = PRINT['stroke'] * k
+        self.curve = PRINT['curve'] * k
         self.marker = PRINT['marker'] * k
         self.cap = PRINT['cap'] * k
         self.tick = PRINT['tick'] * k

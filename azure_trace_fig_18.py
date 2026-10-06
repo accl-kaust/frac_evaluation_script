@@ -138,12 +138,12 @@ def create_cdf_plot(data_df, output_file="azure_trace_fig_18.pdf"):
             line_color = tint(color, float(tint_values[idx]))
             
             # Plot on both axes so legend can be unified
-            ax_left.plot(sorted_latencies, cdf_values, label=label, color=line_color, linewidth=pstyle.line)
-            ax_right.plot(sorted_latencies, cdf_values, label=label, color=line_color, linewidth=pstyle.line)
+            ax_left.plot(sorted_latencies, cdf_values, label=label, color=line_color, linewidth=pstyle.curve)
+            ax_right.plot(sorted_latencies, cdf_values, label=label, color=line_color, linewidth=pstyle.curve)
 
             # Create proxy handle for legend (solid line in the same tint)
             legend_entries_per_func[func].append(
-                (Line2D([0], [0], color=line_color, lw=pstyle.line), label)
+                (Line2D([0], [0], color=line_color, lw=pstyle.curve), label)
             )
 
     # Configure broken x-axis: left shows 0–50 (Top K / Logit / Norm), right shows the
@@ -220,7 +220,7 @@ def create_cdf_plot(data_df, output_file="azure_trace_fig_18.pdf"):
             label = f'{func_name} ({frag_values[0]} Frag)'
         
         # Use solid line with the function's color for legend
-        handle = Line2D([0], [0], color=color, lw=pstyle.line, alpha=1.0)
+        handle = Line2D([0], [0], color=color, lw=pstyle.curve, alpha=1.0)
         all_handles.append(handle)
         all_labels.append(label)
     
@@ -250,7 +250,8 @@ def create_cdf_plot(data_df, output_file="azure_trace_fig_18.pdf"):
 
     # Check the legend against the data on both sides of the cut.
     fig.canvas.draw()
-    bb = legend.get_window_extent()
+    # matplotlib < 3.5 needs the renderer passed explicitly
+    bb = legend.get_window_extent(fig.canvas.get_renderer())
     left_edge_us = ax_left.transData.inverted().transform((bb.x0, 0))[0]
     right_edge_us = ax_right.transData.inverted().transform((bb.x1, 0))[0]
     top_cdf = ax_left.transData.inverted().transform((0, bb.y1))[1]
