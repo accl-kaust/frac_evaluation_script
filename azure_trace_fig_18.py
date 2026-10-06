@@ -40,7 +40,7 @@ def read_trace_log_data(folder_path):
                     
                     # Calculate fragments: req_bytes / 576 gives the fragment count
                     # 576 = 1 fragment (base unit)
-                    fragments = (req_bytes - 64) // 512
+                    fragments = (req_bytes) // 512
                     
                     # Look ahead for the latency_us in trace_resp (typically 2 lines later)
                     if i + 2 < len(lines):
@@ -146,9 +146,25 @@ def create_cdf_plot(data_df, output_file="azure_trace_fig_18.pdf"):
                 (Line2D([0], [0], color=line_color, lw=pstyle.line), label)
             )
 
-    # Configure broken x-axis: left shows 0–50, right shows 8800+
+    # Configure broken x-axis: left shows 0–50 (Top K / Logit / Norm), right shows the
+    # CNN cluster. The right window is derived from the data so a re-run of the trace
+    # (which shifts CNN latency by hundreds of μs) is not clipped out of view: a fixed
+    # 40 μs wide window whose lower edge is 15 μs below the CNN minimum, rounded down
+    # to a multiple of 5. The CNN rise then sits ~40 % into the panel, leaving the
+    # left part of the panel empty for the legend that straddles the axis cut.
+    # For the original trace (min ≈ 8836 μs) this gives 8820–8860.
     ax_left.set_xlim(0, 50)
-    ax_right.set_xlim(8820, 8860)
+    ax_left.set_xticks(np.arange(0, 51, 10))
+    right_latencies = data_df.loc[data_df['func'] == 2, 'latency_us']
+    if right_latencies.empty:
+        right_latencies = data_df.loc[data_df['latency_us'] > 50, 'latency_us']
+    right_lo = int(np.floor((right_latencies.min() - 15) / 5) * 5)
+    right_hi = right_lo + 40
+    ax_right.set_xlim(right_lo, right_hi)
+    ax_right.set_xticks(np.arange(int(np.ceil(right_lo / 10) * 10), right_hi + 1, 10))
+    print(f"Right panel x-range: {right_lo}–{right_lo + 40} μs "
+          f"(CNN min {right_latencies.min():.1f}, p99 {right_latencies.quantile(0.99):.1f}, "
+          f"max {right_latencies.max():.1f})")
 
     # Hide the spines between ax_left and ax_right
     ax_left.spines['right'].set_visible(False)
@@ -208,22 +224,45 @@ def create_cdf_plot(data_df, output_file="azure_trace_fig_18.pdf"):
         all_handles.append(handle)
         all_labels.append(label)
     
-    # Place legend in the middle gap, shifted slightly to the right to reduce overlap
-    fig.legend(
+    # Legend straddles the axis cut: horizontally centred on the gap between the panels,
+    # vertically in the lower-middle band. That band is empty on both sides: the left
+    # panel's curves finish rising by ~17 μs and only run along CDF = 1 beyond that, and
+    # the right panel is empty left of the CNN rise. The script checks this after layout.
+    legend = fig.legend(
         all_handles,
         all_labels,
-        loc='center left',
-        bbox_to_anchor=(0.52, 0.55),
+        loc='center',
+        bbox_to_anchor=(0.5, 0.5),
         ncol=1,
         prop={'size': pstyle.font, 'weight': 'medium'},
         labelspacing=0.4,
-        framealpha=0.5,
-        handlelength=2.4,
-        handletextpad=0.6
+        framealpha=1.0,
+        handlelength=1.8,
+        handletextpad=0.5
     )
-    
+
     plt.tight_layout()
-    
+
+    pos_l, pos_r = ax_left.get_position(), ax_right.get_position()
+    legend_cx = (pos_l.x1 + pos_r.x0) / 2
+    legend_cy = pos_l.y0 + 0.45 * pos_l.height
+    legend.set_bbox_to_anchor((legend_cx, legend_cy), transform=fig.transFigure)
+
+    # Check the legend against the data on both sides of the cut.
+    fig.canvas.draw()
+    bb = legend.get_window_extent()
+    left_edge_us = ax_left.transData.inverted().transform((bb.x0, 0))[0]
+    right_edge_us = ax_right.transData.inverted().transform((bb.x1, 0))[0]
+    top_cdf = ax_left.transData.inverted().transform((0, bb.y1))[1]
+    left_funcs = data_df[data_df['func'] != 2]
+    # Latest point on the left panel that is still below the legend's top edge
+    left_rise_end = left_funcs['latency_us'].quantile(top_cdf)
+    print(f"Legend spans {left_edge_us:.1f} μs (left panel) .. {right_edge_us:.1f} μs (right panel), "
+          f"top at CDF {top_cdf:.2f}; left curves reach CDF {top_cdf:.2f} by {left_rise_end:.1f} μs, "
+          f"CNN starts at {right_latencies.min():.1f} μs")
+    if left_rise_end > left_edge_us or right_edge_us > right_latencies.min():
+        print("WARNING: legend overlaps a curve; adjust legend_cy or the right-panel window")
+
     # Save the plot as PDF only
     plt.savefig(output_file, bbox_inches='tight', dpi=300)
     pstyle.report(output_file)
