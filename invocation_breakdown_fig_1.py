@@ -1,4 +1,4 @@
-"""Figure 1: latency breakdown of a 4096 B accelerator invocation for gRPC, RDMA and fRAC.
+"""Figure 1: latency breakdown of a 4096 B accelerator invocation for gRPC, RDMA and RAC.
 
 The numbers are the measured medians, typed in below; their sources are the two summaries
 in data/invocation_breakdown/ (gRPC and RDMA) and the fig 13 run for fRAC. Output:
@@ -16,9 +16,9 @@ from plot_colors import (
     BAR_PALETTE, BAR_INDICES, BAR_SATURATION, BAR_WHITE, BAR_BLACK, toned_palette,
 )
 
-# Network Transfer and Accelerator Control use Figure 5's exact green/purple;
+# Network Ingestion and Accelerator Control use Figure 5's exact green/purple;
 # Host-FPGA DMA is a lighter orange.
-indices = [BAR_INDICES[1], 1, BAR_INDICES[0]]  # Network Transfer, Host-FPGA DMA, Accelerator Control
+indices = [BAR_INDICES[1], 1, BAR_INDICES[0]]  # Network Ingestion, Host-FPGA DMA, Accelerator Control
 white = [BAR_WHITE[1], 0.65, BAR_WHITE[0]]
 black = [BAR_BLACK[1], 0.0, BAR_BLACK[0]]
 component_colors = [
@@ -55,14 +55,14 @@ def plot_invocation_breakdown():
     our_rdma_dma = 0.0                       # P2P zero-copy, no host DMA
     our_rdma_network = our_rdma_total - our_rdma_control - our_rdma_dma  # ~86.876
 
-    # 3. fRAC: end-to-end invocation latency for 4096 B requests (2026-10-02 run), the
+    # 3. RAC (fRAC prototype): end-to-end invocation latency for 4096 B requests (2026-10-02 run), the
     #    value quoted in the paper text
     frac_total = 7.8
     frac_network = 7.8
     frac_dma = 0.0
     frac_control = 0.0
 
-    categories = ['gRPC', 'RDMA', 'fRAC (Ours)']
+    categories = ['gRPC', 'RDMA', 'RAC']
 
     fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(9, 4.5), gridspec_kw={'height_ratios': [1.2, 2]})
     fig.subplots_adjust(hspace=0.15)
@@ -105,7 +105,7 @@ def plot_invocation_breakdown():
     for ax in [ax1, ax2]:
         for i in range(len(categories)):
             ax.bar(x[i], networks[i], bar_width,
-                   label='Network Transfer' if (ax == ax1 and i == 0) else "",
+                   label='Network Ingestion' if (ax == ax1 and i == 0) else "",
                    color=color_network, edgecolor='black', linewidth=pstyle.edge, zorder=3)
             ax.bar(x[i], dmas[i], bar_width, bottom=networks[i],
                    label='Host-FPGA DMA' if (ax == ax1 and i == 0) else "",
