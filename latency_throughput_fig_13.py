@@ -154,6 +154,8 @@ def plot_throughput_vs_latency(with_frac, without_frac):
                loc='upper left', ncol=1, bbox_to_anchor=(0, 1.02), frameon=False,
                columnspacing=0.5, markerscale=1.3)
     plt.tight_layout()
+    # Same printed axes box as figs 14 and 15.
+    pstyle.fix_axes_box(plt.gcf(), plt.gca(), plot_fonts.AXES_HEIGHT_13_15)
     plt.savefig('latency_throughput_fig_13.pdf', bbox_inches='tight', dpi=300)
     pstyle.report('latency_throughput_fig_13.pdf')
 

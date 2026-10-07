@@ -15,7 +15,7 @@ from plot_colors import (
 )
 
 # Printed at 0.32\textwidth = 161.3 pt in the paper; its tight-cropped PDF is ~540 pt wide.
-pstyle = plot_fonts.paper_style(printed_width_pt=161.3, cropped_width_pt=539.7)
+pstyle = plot_fonts.paper_style(printed_width_pt=161.3, cropped_width_pt=544.5)
 
 # Function mapping - reordered to Top-K, Logit, Norm, CNN
 function_ids = [1, 3, 5, 2]  # Top-K, Logit, Norm, CNN
@@ -353,13 +353,16 @@ def create_mixed_figure():
     for tick in ax_bottom.get_yticklabels():
         tick.set_fontweight('medium')
     
-    # Set y-axis label only on bottom subplot, positioned to cover both subplots
-    fig.text(
-        0.0, 0.5, 'Latency (μs)', va='center', rotation='vertical', fontsize=pstyle.font, fontweight='medium'
-    )
-    
     # Add more space at top for legend and bottom for x-axis labels, without changing total figure size
     plt.subplots_adjust(left=0.16, top=0.9, bottom=0.22)
+    # Y-axis label on the bottom panel, centred on the two panels together (the panels
+    # keep their proportions through fix_axes_box, so this axes fraction stays valid)
+    p_top, p_bot = ax_top.get_position(), ax_bottom.get_position()
+    stack_mid = ((p_top.y1 + p_bot.y0) / 2 - p_bot.y0) / p_bot.height
+    ax_bottom.set_ylabel('Latency (μs)', fontsize=pstyle.font, fontweight='medium', y=stack_mid)
+
+    # Same printed axes box as figs 13 and 15 (both panels plus the break gap).
+    pstyle.fix_axes_box(fig, [ax_top, ax_bottom], plot_fonts.AXES_HEIGHT_13_15)
     
     # Add legend in one column on the left side, vertically centered on the axis break
     # so it spans across the cut between the two subplots

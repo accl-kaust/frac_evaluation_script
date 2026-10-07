@@ -118,6 +118,11 @@ PRINT = {
     'labelpad': 1.5,
 }
 
+# Figs 13, 14 and 15 sit side by side at 0.32\textwidth, so their axes boxes print at
+# one height (page points); PaperStyle.fix_axes_box enforces it. The box width follows
+# from cropped_width_pt minus the tick and axis labels, so equal labels give equal widths.
+AXES_HEIGHT_13_15 = 70.0
+
 
 class PaperStyle:
     """Sizes (in matplotlib points) that print at the PRINT sizes for one figure."""
@@ -138,6 +143,42 @@ class PaperStyle:
         self.labelpad = PRINT['labelpad'] * k
         # kwargs for error bars drawn by ax.bar(..., yerr=...)
         self.error_kw = dict(elinewidth=self.edge, capsize=self.cap, capthick=self.edge, ecolor='black')
+
+    def fix_axes_box(self, fig, axes, height_pt, pad_in=0.1):
+        """Resize ``fig`` and reposition ``axes`` (one axes or a vertical stack of them)
+        so the axes box prints exactly ``height_pt`` page points high, and so the tight
+        crop is exactly ``cropped_width_pt`` wide (the box takes the width left over by
+        the tick and axis labels, so the declared scale, and every font and stroke size,
+        holds without re-tuning the constant).
+
+        Everything outside the axes keeps its size; the figure grows or shrinks around
+        the box, and the crop margins are preserved. Call it after the layout
+        (tight_layout / subplots_adjust) and before anything placed in figure
+        coordinates, then save with bbox_inches='tight' (``pad_in`` is its pad).
+        Returns the printed axes-box width in page points."""
+        if not isinstance(axes, (list, tuple)):
+            axes = [axes]
+        target_h = height_pt / self.scale / 72.0          # inches on the figure page
+        crop_w = self.cropped_width_pt / 72.0
+        for _ in range(2):   # second pass picks up decorations placed in axes fractions
+            fig.canvas.draw()
+            r = fig.canvas.get_renderer()
+            inv = fig.dpi_scale_trans.inverted()
+            tight = fig.get_tightbbox(r)
+            boxes = [ax.get_window_extent(r).transformed(inv) for ax in axes]
+            sx0, sx1 = min(b.x0 for b in boxes), max(b.x1 for b in boxes)
+            sy0, sy1 = min(b.y0 for b in boxes), max(b.y1 for b in boxes)
+            left, right = sx0 - tight.x0, tight.x1 - sx1
+            bottom, top = sy0 - tight.y0, tight.y1 - sy1
+            target_w = crop_w - 2 * pad_in - left - right
+            new_w = left + target_w + right + 2 * pad_in
+            new_h = bottom + target_h + top + 2 * pad_in
+            fig.set_size_inches(new_w, new_h, forward=False)
+            for ax, b in zip(axes, boxes):
+                y0 = bottom + pad_in + (b.y0 - sy0) / (sy1 - sy0) * target_h
+                h = b.height / (sy1 - sy0) * target_h
+                ax.set_position([(left + pad_in) / new_w, y0 / new_h, target_w / new_w, h / new_h])
+        return target_w * 72.0 * self.scale
 
     def pt(self, printed_pt):
         """Convert any size given in printed points to this figure's points."""
