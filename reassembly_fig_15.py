@@ -228,10 +228,10 @@ def create_grouped_bar_chart(data, directory):
               bbox_to_anchor=(0.0, 1.00))
     
     plt.tight_layout(rect=[0, 0.18, 1, 1])
-    # Same printed axes box as figs 13 and 14.
-    pstyle.fix_axes_box(fig, ax, plot_fonts.AXES_HEIGHT_13_15)
+    # Shared frame with figs 13 and 14: same page, same axes box; saved uncropped.
+    pstyle.frame_axes(fig, ax, plot_fonts.FRAME_13_15)
 
-    plt.savefig("reassembly_fig_15.pdf", bbox_inches='tight')
+    plt.savefig("reassembly_fig_15.pdf")
     pstyle.report("reassembly_fig_15.pdf")
     print("Plot saved as reassembly_fig_15.pdf")
     plt.close()

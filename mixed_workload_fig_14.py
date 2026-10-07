@@ -356,13 +356,14 @@ def create_mixed_figure():
     # Add more space at top for legend and bottom for x-axis labels, without changing total figure size
     plt.subplots_adjust(left=0.16, top=0.9, bottom=0.22)
     # Y-axis label on the bottom panel, centred on the two panels together (the panels
-    # keep their proportions through fix_axes_box, so this axes fraction stays valid)
+    # keep their proportions through frame_axes, so this axes fraction stays valid)
     p_top, p_bot = ax_top.get_position(), ax_bottom.get_position()
     stack_mid = ((p_top.y1 + p_bot.y0) / 2 - p_bot.y0) / p_bot.height
     ax_bottom.set_ylabel('Latency (μs)', fontsize=pstyle.font, fontweight='medium', y=stack_mid)
 
-    # Same printed axes box as figs 13 and 15 (both panels plus the break gap).
-    pstyle.fix_axes_box(fig, [ax_top, ax_bottom], plot_fonts.AXES_HEIGHT_13_15)
+    # Shared frame with figs 13 and 15: same page, same axes box (both panels plus the
+    # break gap); saved uncropped.
+    pstyle.frame_axes(fig, [ax_top, ax_bottom], plot_fonts.FRAME_13_15)
     
     # Add legend in one column on the left side, vertically centered on the axis break
     # so it spans across the cut between the two subplots
@@ -389,7 +390,7 @@ def create_mixed_figure():
     ax_bottom.spines['top'].set_visible(False)
     
     # Save plot
-    plt.savefig('mixed_workload_fig_14.pdf', bbox_inches='tight')
+    plt.savefig('mixed_workload_fig_14.pdf')
     pstyle.report('mixed_workload_fig_14.pdf')
     print("\nPlot saved as mixed_workload_fig_14.pdf")
 

@@ -118,10 +118,13 @@ PRINT = {
     'labelpad': 1.5,
 }
 
-# Figs 13, 14 and 15 sit side by side at 0.32\textwidth, so their axes boxes print at
-# one height (page points); PaperStyle.fix_axes_box enforces it. The box width follows
-# from cropped_width_pt minus the tick and axis labels, so equal labels give equal widths.
-AXES_HEIGHT_13_15 = 70.0
+# Figs 13, 14 and 15 sit side by side at 0.32\textwidth in top-aligned minipages, so
+# they share one printed frame: page size, axes-box size and box position (page points).
+# PaperStyle.frame_axes lays each figure out on it; the scripts then save WITHOUT a
+# tight crop so the page is the frame. Box width 139 and left offset 18 leave room for
+# the widest tick labels (fig 14's "8000") and the break marks; page height 98 fits
+# fig 15's two rows of x labels.
+FRAME_13_15 = dict(page=(161.3, 98.0), box=(139.0, 70.0), offset=(18.0, 3.0))
 
 
 class PaperStyle:
@@ -144,41 +147,38 @@ class PaperStyle:
         # kwargs for error bars drawn by ax.bar(..., yerr=...)
         self.error_kw = dict(elinewidth=self.edge, capsize=self.cap, capthick=self.edge, ecolor='black')
 
-    def fix_axes_box(self, fig, axes, height_pt, pad_in=0.1):
-        """Resize ``fig`` and reposition ``axes`` (one axes or a vertical stack of them)
-        so the axes box prints exactly ``height_pt`` page points high, and so the tight
-        crop is exactly ``cropped_width_pt`` wide (the box takes the width left over by
-        the tick and axis labels, so the declared scale, and every font and stroke size,
-        holds without re-tuning the constant).
-
-        Everything outside the axes keeps its size; the figure grows or shrinks around
-        the box, and the crop margins are preserved. Call it after the layout
+    def frame_axes(self, fig, axes, frame):
+        """Lay ``fig`` out on a shared printed frame: ``frame['page']`` is the figure
+        (= saved PDF) size, ``frame['box']`` the axes-box size and ``frame['offset']``
+        the box's (left, top) position, all in page points. ``axes`` is one axes or a
+        vertical stack, which keeps its internal proportions. Call it after the layout
         (tight_layout / subplots_adjust) and before anything placed in figure
-        coordinates, then save with bbox_inches='tight' (``pad_in`` is its pad).
-        Returns the printed axes-box width in page points."""
+        coordinates, then save without bbox_inches='tight'. Warns if any artist runs
+        off the page (it would be clipped)."""
         if not isinstance(axes, (list, tuple)):
             axes = [axes]
-        target_h = height_pt / self.scale / 72.0          # inches on the figure page
-        crop_w = self.cropped_width_pt / 72.0
-        for _ in range(2):   # second pass picks up decorations placed in axes fractions
-            fig.canvas.draw()
-            r = fig.canvas.get_renderer()
-            inv = fig.dpi_scale_trans.inverted()
-            tight = fig.get_tightbbox(r)
-            boxes = [ax.get_window_extent(r).transformed(inv) for ax in axes]
-            sx0, sx1 = min(b.x0 for b in boxes), max(b.x1 for b in boxes)
-            sy0, sy1 = min(b.y0 for b in boxes), max(b.y1 for b in boxes)
-            left, right = sx0 - tight.x0, tight.x1 - sx1
-            bottom, top = sy0 - tight.y0, tight.y1 - sy1
-            target_w = crop_w - 2 * pad_in - left - right
-            new_w = left + target_w + right + 2 * pad_in
-            new_h = bottom + target_h + top + 2 * pad_in
-            fig.set_size_inches(new_w, new_h, forward=False)
-            for ax, b in zip(axes, boxes):
-                y0 = bottom + pad_in + (b.y0 - sy0) / (sy1 - sy0) * target_h
-                h = b.height / (sy1 - sy0) * target_h
-                ax.set_position([(left + pad_in) / new_w, y0 / new_h, target_w / new_w, h / new_h])
-        return target_w * 72.0 * self.scale
+        k = 1.0 / (self.scale * 72.0)                       # page pt -> figure inches
+        page_w, page_h = (v * k for v in frame['page'])
+        box_w, box_h = (v * k for v in frame['box'])
+        left, top = (v * k for v in frame['offset'])
+        fig.set_size_inches(page_w, page_h, forward=False)
+        fig.canvas.draw()
+        r = fig.canvas.get_renderer()
+        inv = fig.dpi_scale_trans.inverted()
+        boxes = [ax.get_window_extent(r).transformed(inv) for ax in axes]
+        sy0, sy1 = min(b.y0 for b in boxes), max(b.y1 for b in boxes)
+        box_y0 = page_h - top - box_h
+        for ax, b in zip(axes, boxes):
+            y0 = box_y0 + (b.y0 - sy0) / (sy1 - sy0) * box_h
+            h = b.height / (sy1 - sy0) * box_h
+            ax.set_position([left / page_w, y0 / page_h, box_w / page_w, h / page_h])
+        fig.canvas.draw()
+        t = fig.get_tightbbox(fig.canvas.get_renderer())
+        over = [f"{side} {v / k:.1f} pt" for side, v in
+                (("left", -t.x0), ("right", t.x1 - page_w), ("bottom", -t.y0), ("top", t.y1 - page_h))
+                if v > 0.02 * k]
+        if over:
+            print("frame_axes: content runs off the page and will be clipped: " + ", ".join(over))
 
     def pt(self, printed_pt):
         """Convert any size given in printed points to this figure's points."""
