@@ -10,6 +10,9 @@ import mpl_toolkits.axisartist.grid_helper_curvelinear as grid_helper_curvelinea
 from matplotlib import gridspec
 
 import plot_fonts  # Helvetica Neue from fonts/, shared palette and print-size style
+from plot_colors import (
+    BAR_PALETTE, BAR_INDICES, BAR_SATURATION, BAR_WHITE, BAR_BLACK, toned_palette,
+)
 
 # Printed at 0.32\textwidth = 161.3 pt in the paper; its tight-cropped PDF is ~540 pt wide.
 pstyle = plot_fonts.paper_style(printed_width_pt=161.3, cropped_width_pt=539.7)
@@ -18,8 +21,15 @@ pstyle = plot_fonts.paper_style(printed_width_pt=161.3, cropped_width_pt=539.7)
 function_ids = [1, 3, 5, 2]  # Top-K, Logit, Norm, CNN
 function_names = ['Top-K', 'Logit', 'Norm', 'CNN']  # Shorter labels for x-axis
 function_legend_names = ['Top-K', 'Logit', 'Norm', 'CNN']  # Full names for legend
-# Replace with color-blind friendly palette (Okabe-Ito color scheme)
-function_colors = plot_fonts.CATEGORY_PALETTE[:4]  # Top-K, Logit, Norm, CNN (category colours, same as fig 18)
+# Logit uses Figure 5's exact purple; Top-K, Norm and CNN have their own color and tone controls.
+figure14_colors = {"Top-K": 9, "Logit": BAR_INDICES[0], "Norm": 8, "CNN": 1}
+white = {"Top-K": 0.25, "Logit": BAR_WHITE[0], "Norm": 0.4, "CNN": 0.0}
+black = {"Top-K": 0.0, "Logit": BAR_BLACK[0], "Norm": 0.0, "CNN": 0.05}
+function_colors = [
+    toned_palette([figure14_colors[name]], palette=BAR_PALETTE, saturation=BAR_SATURATION,
+                  white=white[name], black=black[name])[0]
+    for name in function_names
+]
 # Add hatching patterns for grayscale distinguishability
 #function_hatches = ['//', '\\\\', '||', '++']  # Diagonal, reverse diagonal, vertical, cross patterns
 

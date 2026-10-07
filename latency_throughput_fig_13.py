@@ -21,6 +21,22 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import plot_fonts  # Helvetica Neue from fonts/, shared palette and print-size style
+from plot_colors import (
+    LINE_PALETTE, LINE_INDICES, LINE_SATURATION, LINE_WHITE, LINE_BLACK, toned_palette,
+)
+
+# Approved Seaborn colorblind pair, shared with the other system line plots.
+# Order: Transport+fRAC (blue), Transport (vermilion).
+palette_name = LINE_PALETTE
+indices = list(LINE_INDICES[:2])
+saturation = list(LINE_SATURATION[:2])
+white = list(LINE_WHITE[:2])
+black = list(LINE_BLACK[:2])
+color_frac, color_transport = [
+    toned_palette([index], palette=palette_name, saturation=saturation[n],
+                  white=white[n], black=black[n])[0]
+    for n, index in enumerate(indices)
+]
 
 # Printed at 0.32\textwidth = 161.3 pt in the paper; its tight-cropped PDF is ~545 pt wide.
 pstyle = plot_fonts.paper_style(printed_width_pt=161.3, cropped_width_pt=544.5)
@@ -114,8 +130,8 @@ def plot_throughput_vs_latency(with_frac, without_frac):
     plt.figure(figsize=(8, 4.65))  # 4.65 in keeps the printed height at ~90 pt with 6 pt text
 
     for points, marker, color, label, alpha in (
-        (without_frac, plot_fonts.M_BASE, plot_fonts.C_BASE, 'Transport', 0.35),
-        (with_frac, plot_fonts.M_OURS, plot_fonts.C_OURS, 'Transport+fRAC', 0.2),
+        (without_frac, plot_fonts.M_BASE, color_transport, 'Transport', 0.35),
+        (with_frac, plot_fonts.M_OURS, color_frac, 'Transport+fRAC', 0.2),
     ):
         x = [p[0] for p in points]
         med = [p[1] for p in points]

@@ -6,6 +6,19 @@ import matplotlib.patches as mpatches
 from matplotlib.ticker import MaxNLocator
 
 import plot_style
+from plot_colors import (
+    BAR_PALETTE, BAR_INDICES, BAR_SATURATION, BAR_WHITE, BAR_BLACK, toned_palette,
+)
+
+# Req A/B use Figure 5's exact green/purple; Req C is a lighter yellow.
+request_colors = [BAR_INDICES[1], BAR_INDICES[0], 8]  # Req A, B, C
+white = [BAR_WHITE[1], BAR_WHITE[0], 0.25]
+black = [BAR_BLACK[1], BAR_BLACK[0], 0.0]
+request_palette = [
+    toned_palette([index], palette=BAR_PALETTE, saturation=BAR_SATURATION,
+                  white=white[n], black=black[n])[0]
+    for n, index in enumerate(request_colors)
+]
 
 plot_style.apply()
 # Printed at \columnwidth = 240 pt in the paper; its tight-cropped PDF is ~696 pt wide.
@@ -83,7 +96,7 @@ def plot_latency(all_data, output_dir):
     distributions = ["Single packet req dominant", "Even distribution of req sizes", "Multi-packet req dominant"]
     workload_types = ['A', 'B', 'C']  # Keep single letters for data processing
     workload_labels = ['Req A', 'Req B', 'Req C']  # Full labels for legend
-    colors = plot_style.CATEGORY_PALETTE[:3]  # Req A, B, C (category colours, not system colours)
+    colors = request_palette  # Req A, B, C
     x_values = np.arange(len(distributions))
 
     fig, axes = plt.subplots(1, 2, figsize=(10, 3.16), sharey=True)  # 3.16 in keeps the printed height at ~70 pt

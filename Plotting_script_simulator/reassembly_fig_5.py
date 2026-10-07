@@ -22,6 +22,22 @@ import matplotlib.patches as mpatches
 from matplotlib.ticker import ScalarFormatter
 
 import plot_style
+from plot_colors import (
+    BAR_PALETTE, BAR_INDICES, BAR_SATURATION, BAR_WHITE, BAR_BLACK, toned_palette,
+)
+
+# Defaults in plot_colors.py; override here for Figure 5 only.
+# Order: Immediate (purple), Reassembled (green). Tone controls range from 0 to 1.
+palette_name = BAR_PALETTE
+indices = list(BAR_INDICES)
+saturation = BAR_SATURATION
+white = list(BAR_WHITE)  # [0.0, 0.5]: more white makes each color lighter
+black = list(BAR_BLACK)  # [0.15, 0.0]: more black makes each color darker
+color_baseline, color_improved = [
+    toned_palette([index], palette=palette_name, saturation=saturation,
+                  white=white[n], black=black[n])[0]
+    for n, index in enumerate(indices)
+]
 
 plot_style.apply()
 # Printed at 0.48\textwidth = 241.9 pt in the paper; the 12 in wide page is not tight-cropped.
@@ -69,16 +85,16 @@ def draw_utilization(ax):
         immediate = load_utilization(dist, UTIL_MODES[0])
         reassembled = load_utilization(dist, UTIL_MODES[1])
         ax.boxplot(immediate, positions=[positions[i]], widths=box_width, patch_artist=True,
-                   boxprops=dict(facecolor=plot_style.C_BASE, linewidth=pstyle.edge),
+                   boxprops=dict(facecolor=color_baseline, edgecolor='black', linewidth=pstyle.edge),
                    whiskerprops=dict(linewidth=pstyle.edge),
                    capprops=dict(linewidth=pstyle.edge),
                    medianprops=dict(color='black', linewidth=pstyle.median),
                    showfliers=False)
         ax.boxplot(reassembled, positions=[positions[i] + box_width + 0.1], widths=box_width, patch_artist=True,
-                   boxprops=dict(facecolor=plot_style.C_OURS, linewidth=pstyle.edge),
+                   boxprops=dict(facecolor=color_improved, edgecolor='black', linewidth=pstyle.edge),
                    whiskerprops=dict(linewidth=pstyle.edge),
                    capprops=dict(linewidth=pstyle.edge),
-                   medianprops=dict(color=plot_style.C_OURS, linewidth=pstyle.median),
+                   medianprops=dict(color='black', linewidth=pstyle.median),
                    showfliers=False)
 
     ax.set_xlabel('Request Size (Fragments)', fontsize=pstyle.font, fontweight='medium')
@@ -116,9 +132,9 @@ def draw_throughput(ax):
     x = np.arange(len(PACKET_DISTRIBUTION))
     width = 0.3
     ax.bar(x - width / 2, immediate, width, label='Immediate',
-           color=plot_style.C_BASE, edgecolor='black', linewidth=pstyle.edge)
+           color=color_baseline, edgecolor='black', linewidth=pstyle.edge)
     ax.bar(x + width / 2, reassembled, width, label='Reassembled',
-           color=plot_style.C_OURS, edgecolor='black', linewidth=pstyle.edge)
+           color=color_improved, edgecolor='black', linewidth=pstyle.edge)
 
     ax.set_xlabel('Request Size (Fragments)', fontsize=pstyle.font, fontweight='medium')
     ax.set_ylabel('Throughput (Frag/s)', fontsize=pstyle.font, fontweight='medium')
@@ -150,8 +166,8 @@ def main():
     # One frameless legend for both panels (same two series in each), centred above the
     # panel titles as in fig 16. tight_layout is told to leave the legend's row free.
     handles = [
-        mpatches.Patch(facecolor=plot_style.C_BASE, label='Immediate', edgecolor='black', linewidth=pstyle.edge),
-        mpatches.Patch(facecolor=plot_style.C_OURS, label='Reassembled', edgecolor='black', linewidth=pstyle.edge),
+        mpatches.Patch(facecolor=color_baseline, label='Immediate', edgecolor='black', linewidth=pstyle.edge),
+        mpatches.Patch(facecolor=color_improved, label='Reassembled', edgecolor='black', linewidth=pstyle.edge),
     ]
     legend = fig.legend(handles=handles, loc='upper center', bbox_to_anchor=(0.5, 1.0), ncol=2, frameon=False,
                         prop={'weight': 'medium', 'size': pstyle.font}, columnspacing=1.0, handletextpad=0.5)

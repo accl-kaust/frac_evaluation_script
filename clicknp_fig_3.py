@@ -26,7 +26,7 @@ Two layouts of the same data are available (``--variant``):
                        notebook cell that wrote ClickNP_Result_no_shadow_square.pdf.
 
 Fonts, colours and sizes follow the shared style in ``plot_fonts``: Helvetica Neue
-Medium, the paper palette (baseline = vermilion triangles, direct offload = dark-blue
+Medium, the Seaborn colorblind palette (baseline = vermilion triangles, direct offload = blue
 squares) and line/marker/text sizes chosen so that, printed at 0.95\columnwidth
 (Figure 3), they come out identical to the other figures.  The notebook's 3 pt lines
 and black-outlined scatter overlay are intentionally not reproduced.
@@ -51,6 +51,22 @@ import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.ticker import MaxNLocator  # noqa: E402
 
 import plot_fonts  # noqa: E402  (Helvetica Neue from fonts/, shared palette and print-size style)
+from plot_colors import (  # noqa: E402
+    LINE_PALETTE, LINE_INDICES, LINE_SATURATION, LINE_WHITE, LINE_BLACK, toned_palette,
+)
+
+# Shared print-contrast line palette; local controls follow this series order.
+# Order: Traditional offload (vermilion), Direct offload (blue).
+palette_name = LINE_PALETTE
+indices = [LINE_INDICES[1], LINE_INDICES[0]]
+saturation = [LINE_SATURATION[1], LINE_SATURATION[0]]
+white = [LINE_WHITE[1], LINE_WHITE[0]]
+black = [LINE_BLACK[1], LINE_BLACK[0]]
+color_traditional, color_direct = [
+    toned_palette([index], palette=palette_name, saturation=saturation[n],
+                  white=white[n], black=black[n])[0]
+    for n, index in enumerate(indices)
+]
 
 
 # --------------------------------------------------------------------------- #
@@ -66,10 +82,10 @@ DEFAULT_DATA_DIR = os.path.join(SCRIPT_DIR, "data")
 
 # series name -> (sub-folder in data dir, line colour, marker)
 # Colour and marker by role, shared with figs 13 / 16: baseline = vermilion triangle,
-# ours (direct offload) = dark-blue square.
+# ours (direct offload) = blue square.
 SERIES = {
-    "Traditional offload": ("Networked_CPU_control_no_buffer", plot_fonts.C_BASE, plot_fonts.M_BASE),
-    "Direct offload": ("Networked_multi", plot_fonts.C_OURS, plot_fonts.M_OURS),
+    "Traditional offload": ("Networked_CPU_control_no_buffer", color_traditional, plot_fonts.M_BASE),
+    "Direct offload": ("Networked_multi", color_direct, plot_fonts.M_OURS),
 }
 
 # Figure 3 is printed at 0.95\columnwidth = 228 pt; the tight-cropped wide PDF is ~625 pt.

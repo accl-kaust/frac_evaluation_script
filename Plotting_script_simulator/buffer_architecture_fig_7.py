@@ -4,6 +4,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import plot_style
+from plot_colors import bar_palette
+
+# Figure 5's purple/green; the shared color controls live in plot_colors.py.
+color_baseline, color_improved = bar_palette()
 
 plot_style.apply()
 # Printed at \columnwidth = 240 pt in the paper; its tight-cropped PDF is ~1111 pt wide.
@@ -122,8 +126,8 @@ def plot_three_figures(data_list_1, data_list_2, output_dir, request_lengths, re
 
     labels = ["Per-Acc Buffer", "Reassem. Buffer"]  # short, one line each
     styles = [
-        {'color': plot_style.C_BASE, 'edgecolor': 'black', 'hatch': ''},   # per-accelerator buffer (baseline)
-        {'color': plot_style.C_OURS, 'edgecolor': 'black', 'hatch': ''}    # reassembly buffer (ours)
+        {'color': color_baseline, 'edgecolor': 'black', 'hatch': ''},   # per-accelerator buffer (baseline)
+        {'color': color_improved, 'edgecolor': 'black', 'hatch': ''}    # reassembly buffer (ours)
     ]
 
     fig, axs = plt.subplots(1, 3, figsize=(18, 3.7))  # single row; 3.7 in keeps the printed height at ~74 pt

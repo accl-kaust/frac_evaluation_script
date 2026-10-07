@@ -9,6 +9,22 @@ import matplotlib.ticker as ticker
 import pickle
 
 import plot_fonts  # Helvetica Neue from fonts/, shared palette and print-size style
+from plot_colors import (
+    LINE_PALETTE, LINE_INDICES, LINE_SATURATION, LINE_WHITE, LINE_BLACK, toned_palette,
+)
+
+# Shared print-contrast line palette; local controls follow this series order.
+# Order: fRAC (blue), CPU (vermilion), DPU (charcoal).
+palette_name = LINE_PALETTE
+indices = list(LINE_INDICES)
+saturation = list(LINE_SATURATION)
+white = list(LINE_WHITE)
+black = list(LINE_BLACK)
+system_colors = [
+    toned_palette([index], palette=palette_name, saturation=saturation[n],
+                  white=white[n], black=black[n])[0]
+    for n, index in enumerate(indices)
+]
 
 # Printed at \textwidth = 504 pt in the paper; its tight-cropped PDF is ~1275 pt wide.
 pstyle = plot_fonts.paper_style(printed_width_pt=504.0, cropped_width_pt=1275.2)
@@ -551,9 +567,7 @@ def create_separate_accel_plots(base_directory):
     fig, axes = plt.subplots(1, 6, figsize=(18, 3.56), sharey=True)  # 3.56 in keeps the printed height at ~99 pt
     
     # Colors - one color per device type
-    color_accel = plot_fonts.C_OURS   # fRAC
-    color_cpu = plot_fonts.C_BASE     # CPU
-    color_dpu = plot_fonts.C_THIRD    # DPU
+    color_accel, color_cpu, color_dpu = system_colors
     
     # Configuration: (accel_count, accel_key, cpu_key, dpu_key, msg_size, title)
     plot_configs = [
@@ -661,74 +675,84 @@ def create_separate_accel_plots(base_directory):
         
         # Add annotations for ALL points. y_multiplier / va may be a single value
         # or one value per point.
-        def annotate_all_points(clients, latencies, color, y_multiplier, va='top'):
+        def annotate_all_points(clients, latencies, color, y_multiplier, va='top', centre_first_above=True):
             n = len(clients)
             mults = list(y_multiplier) if isinstance(y_multiplier, (list, tuple)) else [y_multiplier] * n
             vas = list(va) if isinstance(va, (list, tuple)) else [va] * n
+            # Panel edges, not the (possibly filtered) series ends, decide which side has room.
+            first, last = min(all_clients), max(all_clients)
             for i, client_count in enumerate(clients):
                 y_pos = latencies[i] * mults[i]
-                if client_count == max(clients):  # Last point
+                below = vas[i] == 'top'
+                # A line rising steeply into the point would cut a centred label below it.
+                steep_in = i > 0 and np.log10(latencies[i] / latencies[i - 1]) / (client_count - clients[i - 1]) >= 0.07
+                if client_count == last:  # Last point
                     x_pos = client_count
                     ha = 'right'
-                elif client_count == min(clients):  # First point
+                elif client_count == first and not below and centre_first_above:  # First point, label above: clear of the rising line
+                    x_pos = client_count + 0.15
+                    ha = 'center'
+                elif client_count == first or (below and steep_in):  # First point, or steep rise: label to the right
                     x_pos = client_count + 0.3
                     ha = 'left'
                 else:  # Middle points
                     x_pos = client_count
                     ha = 'center'
-                ax.annotate(f'{int(latencies[i])}', 
-                           xy=(client_count, latencies[i]), 
+                # Labels stay inside the panel, so they are kept out of tight_layout:
+                # moving a label must not resize the panels.
+                ax.annotate(f'{int(latencies[i])}',
+                           xy=(client_count, latencies[i]),
                            xytext=(x_pos, y_pos),
                            fontsize=pstyle.font, fontweight='medium', color=color,
-                           ha=ha, va=vas[i])
+                           ha=ha, va=vas[i], in_layout=False)
         
-        # fRAC labels go above the marker: below, they collide with the x-axis
-        # now that fRAC sits at 8-12 us on every panel. Where CPU/DPU data at the
-        # same client count are too close for that (a 6 pt label spans ~x1.7 on
-        # this log axis, the marker another ~x1.15, so the lowest CPU/DPU value -
-        # the p25 band bottom - has to be at least ~1.95x the fRAC value), the
-        # label goes under the marker instead and the y-axis is extended to fit.
-        def frac_placement(clients, latencies, *others):
-            lowest = {}
-            for data in others:
-                for x in data:
-                    lowest[x[0]] = min(lowest.get(x[0], np.inf), x[1])
-            mults, vas = [], []
-            for c, lat in zip(clients, latencies):
-                if lowest.get(c, np.inf) / lat >= 1.95:
-                    mults.append(1.15); vas.append('bottom')
-                else:
-                    mults.append(0.80); vas.append('top')
-            return mults, vas
-        
+        # fRAC and CPU labels sit under their lines, DPU labels above theirs.
+        # Under a marker the label top is at 0.74x the value; above, the label
+        # bottom is at 1.24x (about 1.3 pt clear of the marker when printed).
+        # CPU sits between fRAC and DPU, so its labels use that gap only where it
+        # fits: with the CPU value under 2.6x the fRAC value at that client count
+        # the label keeps the tighter 0.80x, and under 2.2x (the 6 pt label spans
+        # ~x1.55 on this log axis, the fRAC marker another ~x1.15) it stays above
+        # its marker at 1.15x, right of the first marker as before since the DPU
+        # marker sits just above it there.
+        LABEL_BELOW = dict(y_multiplier=0.74, va='top')
+        LABEL_ABOVE = dict(y_multiplier=1.24, va='bottom')
+        frac_at = dict(zip(clients_accel, latency_accel))
+
+        def cpu_placement(clients, latencies):
+            room = [lat / frac_at[c] if c in frac_at else np.inf for c, lat in zip(clients, latencies)]
+            return dict(y_multiplier=[0.74 if r >= 2.6 else 0.80 if r >= 2.2 else 1.15 for r in room],
+                        va=['top' if r >= 2.2 else 'bottom' for r in room])
+
         if clients_accel and latency_accel:
-            mults, vas = frac_placement(clients_accel, latency_accel, data_cpu, data_dpu)
-            frac_label_below = frac_label_below or ('top' in vas)
-            annotate_all_points(clients_accel, latency_accel, color_accel, y_multiplier=mults, va=vas)
-        
+            frac_label_below = True
+            annotate_all_points(clients_accel, latency_accel, color_accel, **LABEL_BELOW)
+
         # Special handling for first two figures (1 Accel) - CPU and DPU lines are very close
         if idx == 0:  # 1 Accel - 1024B
             if clients_cpu and latency_cpu:
-                annotate_all_points(clients_cpu, latency_cpu, color_cpu, y_multiplier=1.15, va='bottom')
+                annotate_all_points(clients_cpu, latency_cpu, color_cpu, centre_first_above=False,
+                                    **cpu_placement(clients_cpu, latency_cpu))
             if clients_dpu and latency_dpu:
                 # Skip DPU annotations for clients 1, 2, 4 to avoid overlap
                 clients_dpu_filtered = [c for c in clients_dpu if c not in [1, 2, 4]]
                 latency_dpu_filtered = [latency_dpu[i] for i, c in enumerate(clients_dpu) if c not in [1, 2, 4]]
-                annotate_all_points(clients_dpu_filtered, latency_dpu_filtered, color_dpu, y_multiplier=1.8, va='bottom')
+                annotate_all_points(clients_dpu_filtered, latency_dpu_filtered, color_dpu, **LABEL_ABOVE)
         elif idx == 1:  # 1 Accel - 4096B - client 2 already filtered from data
             if clients_cpu and latency_cpu:
-                annotate_all_points(clients_cpu, latency_cpu, color_cpu, y_multiplier=1.15, va='bottom')
+                annotate_all_points(clients_cpu, latency_cpu, color_cpu, centre_first_above=False,
+                                    **cpu_placement(clients_cpu, latency_cpu))
             if clients_dpu and latency_dpu:
                 # Skip DPU annotations for clients 1, 4 to avoid overlap (2 already filtered)
                 clients_dpu_filtered = [c for c in clients_dpu if c not in [1, 4]]
                 latency_dpu_filtered = [latency_dpu[i] for i, c in enumerate(clients_dpu) if c not in [1, 4]]
-                annotate_all_points(clients_dpu_filtered, latency_dpu_filtered, color_dpu, y_multiplier=2, va='bottom')
+                annotate_all_points(clients_dpu_filtered, latency_dpu_filtered, color_dpu, **LABEL_ABOVE)
         else:
-            # CPU above, DPU higher above (staggered to avoid overlap)
             if clients_cpu and latency_cpu:
-                annotate_all_points(clients_cpu, latency_cpu, color_cpu, y_multiplier=1.20, va='bottom')
+                annotate_all_points(clients_cpu, latency_cpu, color_cpu, centre_first_above=False,
+                                    **cpu_placement(clients_cpu, latency_cpu))
             if clients_dpu and latency_dpu:
-                annotate_all_points(clients_dpu, latency_dpu, color_dpu, y_multiplier=1.45, va='bottom')
+                annotate_all_points(clients_dpu, latency_dpu, color_dpu, **LABEL_ABOVE)
     
     # Set log scale and consistent y-axis limits AFTER all data is plotted
     if all_latencies:
