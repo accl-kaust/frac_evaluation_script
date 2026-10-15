@@ -24,7 +24,10 @@ function_legend_names = ['Top-K', 'Logit', 'Norm', 'CNN']  # Full names for lege
 # Logit uses Figure 5's exact purple; Top-K, Norm and CNN have their own color and tone controls.
 figure14_colors = {"Top-K": 9, "Logit": BAR_INDICES[0], "Norm": 8, "CNN": 1}
 white = {"Top-K": 0.25, "Logit": BAR_WHITE[0], "Norm": 0.4, "CNN": 0.0}
-black = {"Top-K": 0.0, "Logit": BAR_BLACK[0], "Norm": 0.0, "CNN": 0.05}
+# CNN is darkened so the four fills also read in black and white (ACM print check):
+# lightness L* steps Norm 89 > Top-K 76 > Logit 53 > CNN 38. At black=0.05 CNN was
+# L* 59, the same grey as Logit.
+black = {"Top-K": 0.0, "Logit": BAR_BLACK[0], "Norm": 0.0, "CNN": 0.40}
 function_colors = [
     toned_palette([figure14_colors[name]], palette=BAR_PALETTE, saturation=BAR_SATURATION,
                   white=white[name], black=black[name])[0]
@@ -380,7 +383,8 @@ def create_mixed_figure():
         frameon=True,
         prop={'size': pstyle.font, 'weight': 'medium'},
         labelspacing=0.6,  # Vertical gap between legend rows
-        framealpha=0.5,
+        framealpha=1.0,    # opaque: no PDF transparency (ACM); the area behind is empty
+        edgecolor='black', # a black 0.6 pt frame instead of matplotlib's light grey
         columnspacing=0.8,  # Space between columns
         handletextpad=0.4  # Space between marker and text
     )

@@ -98,6 +98,15 @@ def create_cdf_plot(data_df, output_file="azure_trace_fig_18.pdf"):
         5: plot_fonts.CATEGORY_PALETTE[2],  # Norm
         2: plot_fonts.CATEGORY_PALETTE[3],  # CNN
     }
+    # One line style per function so the curves can also be matched to the legend in
+    # black and white (teal, gold and the lighter tints all print as similar greys).
+    # Dash patterns come from plot_fonts (dense, scaled by the 1.0 pt curve width).
+    func_styles = {
+        1: '-',   # Top K: solid (four bunched curves stay cleanest)
+        3: '--',  # Logit: dashed
+        5: ':',   # Norm: dotted
+        2: '-.',  # CNN: dash-dot
+    }
     
     # Get unique function types, and plot separate lines per fragment with same color
     unique_funcs = sorted(set([func for func, frag in combinations]))
@@ -108,6 +117,7 @@ def create_cdf_plot(data_df, output_file="azure_trace_fig_18.pdf"):
     for func in unique_funcs:
         func_name = func_names.get(func, f'Func {func}')
         color = func_colors.get(func, '#000000')
+        style = func_styles.get(func, '-')
         
         frag_values = sorted(data_df.loc[data_df['func'] == func, 'fragments'].unique())
         # Lighter, fully opaque tints of the function colour for larger fragment counts
@@ -138,12 +148,14 @@ def create_cdf_plot(data_df, output_file="azure_trace_fig_18.pdf"):
             line_color = tint(color, float(tint_values[idx]))
             
             # Plot on both axes so legend can be unified
-            ax_left.plot(sorted_latencies, cdf_values, label=label, color=line_color, linewidth=pstyle.curve)
-            ax_right.plot(sorted_latencies, cdf_values, label=label, color=line_color, linewidth=pstyle.curve)
+            ax_left.plot(sorted_latencies, cdf_values, label=label, color=line_color,
+                         linestyle=style, linewidth=pstyle.curve)
+            ax_right.plot(sorted_latencies, cdf_values, label=label, color=line_color,
+                          linestyle=style, linewidth=pstyle.curve)
 
-            # Create proxy handle for legend (solid line in the same tint)
+            # Create proxy handle for legend (same style and tint as the curve)
             legend_entries_per_func[func].append(
-                (Line2D([0], [0], color=line_color, lw=pstyle.curve), label)
+                (Line2D([0], [0], color=line_color, linestyle=style, lw=pstyle.curve), label)
             )
 
     # Configure broken x-axis: left shows 0–50 (Top K / Logit / Norm), right shows the
@@ -186,9 +198,11 @@ def create_cdf_plot(data_df, output_file="azure_trace_fig_18.pdf"):
     # Use a single centered x-axis label for both panels, positioned closer to the axes
     fig.supxlabel('Latency (μs)', fontsize=pstyle.font, y=0.08, fontweight='medium')
     ax_left.set_ylabel('CDF', fontsize=pstyle.font, fontweight='medium')
-    # Grid: vertical dashed lines like the reference
-    ax_left.grid(True, linestyle='--', alpha=0.7, axis='x')
-    ax_right.grid(True, linestyle='--', alpha=0.7, axis='x')
+    # Grid: vertical dashed lines like the reference. Drawn opaque in the grey that the
+    # previous 70 % alpha produced on white (0.7 x #b0b0b0 + 0.3 x white = #c8c8c8), so
+    # the look is unchanged but the PDF carries no transparency (ACM print rule).
+    ax_left.grid(True, linestyle='--', color='#c8c8c8', alpha=1.0, axis='x')
+    ax_right.grid(True, linestyle='--', color='#c8c8c8', alpha=1.0, axis='x')
     # Ticks: size
     ax_left.tick_params(axis='both', which='major', labelsize=pstyle.font)
     ax_right.tick_params(axis='both', which='major', labelsize=pstyle.font)
@@ -219,8 +233,9 @@ def create_cdf_plot(data_df, output_file="azure_trace_fig_18.pdf"):
         else:
             label = f'{func_name} ({frag_values[0]} Frag)'
         
-        # Use solid line with the function's color for legend
-        handle = Line2D([0], [0], color=color, lw=pstyle.curve, alpha=1.0)
+        # Legend handle in the function's colour and line style
+        handle = Line2D([0], [0], color=color, linestyle=func_styles.get(func, '-'),
+                        lw=pstyle.curve, alpha=1.0)
         all_handles.append(handle)
         all_labels.append(label)
     
@@ -237,7 +252,8 @@ def create_cdf_plot(data_df, output_file="azure_trace_fig_18.pdf"):
         prop={'size': pstyle.font, 'weight': 'medium'},
         labelspacing=0.4,
         framealpha=1.0,
-        handlelength=1.8,
+        edgecolor='black',   # black 0.6 pt frame instead of matplotlib's light grey
+        handlelength=2.6,    # long enough to show two periods of the dash-dot pattern
         handletextpad=0.5
     )
 
