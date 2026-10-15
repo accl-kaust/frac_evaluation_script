@@ -7,6 +7,7 @@ import re
 from matplotlib.lines import Line2D
 
 import plot_fonts  # Helvetica Neue from fonts/, shared palette and print-size style
+from plot_colors import LINE_OURS, LINE_BASELINE, LINE_THIRD  # platform colours shared with figs 3, 13, 16
 
 # Printed at 0.48\textwidth = 241.9 pt in the paper; its tight-cropped PDF is ~568 pt wide.
 pstyle = plot_fonts.paper_style(printed_width_pt=241.9, cropped_width_pt=567.5)
@@ -166,9 +167,10 @@ def create_cdf_comparison_plot(base_directory="data/scalability"):
         (4, 3, "DPU 4c")
     ]
 
-    # Color-blind friendly palette
-    colors = [plot_fonts.C_OURS, plot_fonts.C_BASE, plot_fonts.C_THIRD] * 3  # fRAC, CPU, DPU for each instance count
-    line_styles = ['-', '-', '-', '--', '--', '--', ':', ':', ':']  # Solid for Accel, Dashed for CPU, Dotted for DPU
+    # Colour = platform, as in figs 3, 13 and 16: fRAC green, CPU plum, DPU amber.
+    # Line style = number of accelerators or cores: 1 solid, 2 dashed, 4 dotted.
+    colors = [LINE_OURS] * 3 + [LINE_BASELINE] * 3 + [LINE_THIRD] * 3
+    line_styles = ['-', '--', ':'] * 3
 
     # Two panels sharing the y-axis. The right panel gets 2.5x the width: it carries six
     # curves over 550 us plus the nine-entry legend (~98 pt printed, which has to fit in

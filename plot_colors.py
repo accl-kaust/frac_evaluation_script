@@ -22,9 +22,11 @@ def _tone(color, *, white=0.0, black=0.0, saturation=1.0):
 # Third: DPU.
 LINE_OURS = _CB[2]                          # green     #029e73
 LINE_BASELINE = _tone(_CB[4], black=0.58)   # deep plum #56324f
-# DPU is a second baseline: the lighter mauve keeps it purple but clearly apart from
-# the deep plum CPU line, in color and in greyscale.
-LINE_THIRD = _tone(_CB[4], black=0.15, saturation=0.8)  # mauve #a66d9b
+# DPU is a second baseline, drawn in the palette's third hue (orange, the family of the
+# sand bar colour below) so it is clearly apart from the plum CPU line in figs 16 and
+# 17; the earlier mauve sat too close to plum. Darkened to 4:1 against white, the same
+# lightness (L* 54) the mauve had, so greyscale printing is unchanged.
+LINE_THIRD = _tone(_CB[1], black=0.2)       # amber #b27204
 
 # Bars and boxes (Figures 1, 5, 7, 8, 9, 14 and 15).
 BAR_OURS = _tone(_CB[2], white=0.5, saturation=0.8)       # mint  #88c7b6

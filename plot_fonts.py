@@ -93,7 +93,10 @@ C_OURS = '#004D7A'    # dark blue
 C_BASE = '#D55E00'    # vermilion
 C_THIRD = '#D98CBF'   # pink
 PALETTE = [C_OURS, C_BASE, C_THIRD]                        # systems: fRAC, baseline, DPU
-CATEGORY_PALETTE = ['#44AA99', '#7B3294', '#E6AB02', '#8C564B']  # teal, purple, gold, brown
+CATEGORY_PALETTE = ['#44AA99', '#7B3294', '#E6AB02', '#B2182B']  # teal, purple, gold, red
+# CNN red (ColorBrewer RdBu) replaces sienna on 15 Oct 2026: sienna was only 28 dE from the
+# amber DPU line of figs 16/17 and sat in the same warm family as gold; red is >= 73 dE from
+# every other fig 18 colour and >= 51 dE from the platform colours (CIELAB dE76).
 COMPONENT_PALETTE = ['#EFD999', '#FB9676', '#64903F']           # sand, salmon, green
 # Fig 1 stacks the three components, so they also step in lightness (L* 87 / 72 / 55:
 # network transfer, host-FPGA DMA, accelerator control) and stay apart in greyscale; all

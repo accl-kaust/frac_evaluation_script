@@ -85,7 +85,7 @@ def create_cdf_plot(data_df, output_file="azure_trace_fig_18.pdf"):
     
     # Function name mapping
     func_names = {
-        1: 'Top K',
+        1: 'Top-K',
         2: 'CNN', 
         3: 'Logit',
         5: 'Norm'
@@ -98,16 +98,10 @@ def create_cdf_plot(data_df, output_file="azure_trace_fig_18.pdf"):
         5: plot_fonts.CATEGORY_PALETTE[2],  # Norm
         2: plot_fonts.CATEGORY_PALETTE[3],  # CNN
     }
-    # One line style per function so the curves can also be matched to the legend in
-    # black and white (teal, gold and the lighter tints all print as similar greys).
-    # Dash patterns come from plot_fonts (dense, scaled by the 1.0 pt curve width).
-    func_styles = {
-        1: '-',   # Top K: solid (four bunched curves stay cleanest)
-        3: '--',  # Logit: dashed
-        5: ':',   # Norm: dotted
-        2: '-.',  # CNN: dash-dot
-    }
-    
+    # Line style encodes the fragment count (same for every accelerator), colour the
+    # accelerator. CNN has a single size (48 fragments) and is drawn solid.
+    frag_styles = {1: '-', 2: '--', 4: '-.', 8: ':', 48: '-'}
+
     # Get unique function types, and plot separate lines per fragment with same color
     unique_funcs = sorted(set([func for func, frag in combinations]))
 
@@ -117,45 +111,30 @@ def create_cdf_plot(data_df, output_file="azure_trace_fig_18.pdf"):
     for func in unique_funcs:
         func_name = func_names.get(func, f'Func {func}')
         color = func_colors.get(func, '#000000')
-        style = func_styles.get(func, '-')
-        
+
         frag_values = sorted(data_df.loc[data_df['func'] == func, 'fragments'].unique())
-        # Lighter, fully opaque tints of the function colour for larger fragment counts
-        # (tint = share of the colour mixed with white; no transparency, so the lines keep
-        # their full stroke weight and do not wash out where they cross).
-        if len(frag_values) > 1:
-            tint_values = []
-            for frag in frag_values:
-                if func == 1:  # Top K: frag 1 full colour, the others one lighter tint
-                    tint_values.append(1.0 if frag == 1 else 0.55)
-                else:
-                    tint_values.append(1.0 if frag == frag_values[0] else 0.7)
-        else:
-            tint_values = [1.0]
 
         legend_entries_per_func[func] = []
-        for idx, frag in enumerate(frag_values):
+        for frag in frag_values:
             subset = data_df[(data_df['func'] == func) & (data_df['fragments'] == frag)]
             if len(subset) == 0:
                 continue
-            
+
             latencies = subset['latency_us'].values
             sorted_latencies = np.sort(latencies)
             n = len(sorted_latencies)
             cdf_values = np.arange(1, n + 1) / n
-            
-            label = f'{func_name} {frag} Frag'
-            line_color = tint(color, float(tint_values[idx]))
-            
-            # Plot on both axes so legend can be unified
-            ax_left.plot(sorted_latencies, cdf_values, label=label, color=line_color,
-                         linestyle=style, linewidth=pstyle.curve)
-            ax_right.plot(sorted_latencies, cdf_values, label=label, color=line_color,
-                          linestyle=style, linewidth=pstyle.curve)
 
-            # Create proxy handle for legend (same style and tint as the curve)
+            label = f'{func_name} {frag} Frag'
+            style = frag_styles.get(frag, '-')
+
+            # Plot on both axes so legend can be unified
+            ax_left.plot(sorted_latencies, cdf_values, label=label, color=color,
+                         linestyle=style, linewidth=pstyle.curve)
+            ax_right.plot(sorted_latencies, cdf_values, label=label, color=color,
+                          linestyle=style, linewidth=pstyle.curve)
             legend_entries_per_func[func].append(
-                (Line2D([0], [0], color=line_color, linestyle=style, lw=pstyle.curve), label)
+                (Line2D([0], [0], color=color, linestyle=style, lw=pstyle.curve), label)
             )
 
     # Configure broken x-axis: left shows 0–50 (Top K / Logit / Norm), right shows the
@@ -211,46 +190,38 @@ def create_cdf_plot(data_df, output_file="azure_trace_fig_18.pdf"):
     for tick in ax_right.get_xticklabels() + ax_right.get_yticklabels():
         tick.set_fontweight('medium')
     
-    # Build simplified legend with grouped fragments per function
-    all_handles = []
-    all_labels = []
-    preferred_order = [1, 2, 3, 5]
+    # Two-column legend: left column = accelerator (colour, solid handle), right column
+    # = fragment count (line style, black handle). CNN is annotated with its fixed size.
+    preferred_order = [1, 3, 5, 2]
     funcs_order = [f for f in preferred_order if f in legend_entries_per_func]
-    if not funcs_order:
-        funcs_order = sorted(legend_entries_per_func.keys())
-    
+    acc_handles, acc_labels = [], []
     for func in funcs_order:
         func_name = func_names.get(func, f'Func {func}')
         color = func_colors.get(func, '#000000')
-        
-        # Get all fragment counts for this function
-        frag_values = sorted(data_df.loc[data_df['func'] == func, 'fragments'].unique())
-        
-        # Create a single legend entry per function with fragment info
-        if len(frag_values) > 1:
-            frag_str = ', '.join([str(f) for f in frag_values])
-            label = f'{func_name} ({frag_str} Frag)'
-        else:
-            label = f'{func_name} ({frag_values[0]} Frag)'
-        
-        # Legend handle in the function's colour and line style
-        handle = Line2D([0], [0], color=color, linestyle=func_styles.get(func, '-'),
-                        lw=pstyle.curve, alpha=1.0)
-        all_handles.append(handle)
-        all_labels.append(label)
-    
-    # Legend straddles the axis cut: horizontally centred on the gap between the panels,
-    # vertically in the lower-middle band. That band is empty on both sides: the left
-    # panel's curves finish rising by ~17 μs and only run along CDF = 1 beyond that, and
-    # the right panel is empty left of the CNN rise. The script checks this after layout.
+        label = f'{func_name} (48 Frag)' if func == 2 else func_name
+        acc_handles.append(Line2D([0], [0], color=color, linestyle='-', lw=pstyle.curve))
+        acc_labels.append(label)
+    frag_present = sorted(f for f in data_df['fragments'].unique() if f in (1, 2, 4, 8))
+    frag_handles = [Line2D([0], [0], color='black', linestyle=frag_styles[f], lw=pstyle.curve)
+                    for f in frag_present]
+    frag_labels = [f'{f} Frag' for f in frag_present]
+    # matplotlib fills legend columns top-to-bottom, so interleave by row count
+    nrow = max(len(acc_handles), len(frag_handles))
+    blank = Line2D([0], [0], color='none')
+    acc_handles += [blank] * (nrow - len(acc_handles)); acc_labels += [''] * (nrow - len(acc_labels))
+    frag_handles += [blank] * (nrow - len(frag_handles)); frag_labels += [''] * (nrow - len(frag_labels))
+    all_handles = acc_handles + frag_handles
+    all_labels = acc_labels + frag_labels
+
     legend = fig.legend(
         all_handles,
         all_labels,
         loc='center',
         bbox_to_anchor=(0.5, 0.5),
-        ncol=1,
+        ncol=2,
         prop={'size': pstyle.font, 'weight': 'medium'},
         labelspacing=0.4,
+        columnspacing=1.2,
         framealpha=1.0,
         edgecolor='black',   # black 0.6 pt frame instead of matplotlib's light grey
         handlelength=2.6,    # long enough to show two periods of the dash-dot pattern
@@ -260,7 +231,7 @@ def create_cdf_plot(data_df, output_file="azure_trace_fig_18.pdf"):
     plt.tight_layout()
 
     pos_l, pos_r = ax_left.get_position(), ax_right.get_position()
-    legend_cx = (pos_l.x1 + pos_r.x0) / 2
+    legend_cx = (pos_l.x1 + pos_r.x0) / 2 - 0.045  # nudged left: two-column legend must clear the CNN rise
     legend_cy = pos_l.y0 + 0.45 * pos_l.height
     legend.set_bbox_to_anchor((legend_cx, legend_cy), transform=fig.transFigure)
 
