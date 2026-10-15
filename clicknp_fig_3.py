@@ -51,22 +51,10 @@ import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.ticker import MaxNLocator  # noqa: E402
 
 import plot_fonts  # noqa: E402  (Helvetica Neue from fonts/, shared palette and print-size style)
-from plot_colors import (  # noqa: E402
-    LINE_PALETTE, LINE_INDICES, LINE_SATURATION, LINE_WHITE, LINE_BLACK, toned_palette,
-)
+from plot_colors import LINE_BASELINE, LINE_OURS  # noqa: E402
 
-# Shared print-contrast line palette; local controls follow this series order.
-# Order: Traditional offload (vermilion), Direct offload (blue).
-palette_name = LINE_PALETTE
-indices = [LINE_INDICES[1], LINE_INDICES[0]]
-saturation = [LINE_SATURATION[1], LINE_SATURATION[0]]
-white = [LINE_WHITE[1], LINE_WHITE[0]]
-black = [LINE_BLACK[1], LINE_BLACK[0]]
-color_traditional, color_direct = [
-    toned_palette([index], palette=palette_name, saturation=saturation[n],
-                  white=white[n], black=black[n])[0]
-    for n, index in enumerate(indices)
-]
+# Shared line colors (plot_colors.py): Traditional offload tomato, Direct offload blue.
+color_traditional, color_direct = LINE_BASELINE, LINE_OURS
 
 
 # --------------------------------------------------------------------------- #

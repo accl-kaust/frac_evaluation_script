@@ -6,6 +6,7 @@ import numpy as np
 from matplotlib.patches import Patch
 
 import plot_fonts  # Helvetica Neue from fonts/, shared palette and print-size style
+from plot_colors import BAR_OURS
 
 # Printed at 0.32\textwidth = 161.3 pt in the paper; its tight-cropped PDF is ~545 pt wide.
 pstyle = plot_fonts.paper_style(printed_width_pt=161.3, cropped_width_pt=544.5)
@@ -128,8 +129,9 @@ def create_grouped_bar_chart(data, directory):
     drawn at the same position (visible where it extends above the solid bar)."""
     fig, ax = plt.subplots(figsize=(8, 5.69))  # 5.69 in keeps the printed height at ~90 pt with 6 pt text
 
-    # Solid bar colour (with reassembly); the emulated "without" result is a colourless dashed outline.
-    colors = {'with': plot_fonts.C_OURS}
+    # Solid bar colour (with reassembly): the shared bar blue from plot_colors.py; the
+    # emulated "without" result is a colourless dashed outline.
+    colors = {'with': BAR_OURS}
 
 
     n_functions = len(functions)

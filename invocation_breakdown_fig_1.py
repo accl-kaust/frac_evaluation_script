@@ -12,20 +12,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import plot_fonts  # Helvetica Neue from fonts/, shared palette and print-size style
-from plot_colors import (
-    BAR_PALETTE, BAR_INDICES, BAR_SATURATION, BAR_WHITE, BAR_BLACK, toned_palette,
-)
+from plot_colors import BAR_BASELINE, BAR_OURS, BAR_THIRD
 
-# Network Ingestion and Accelerator Control use Figure 5's exact green/purple;
-# Host-FPGA DMA is a lighter orange.
-indices = [BAR_INDICES[1], 1, BAR_INDICES[0]]  # Network Ingestion, Host-FPGA DMA, Accelerator Control
-white = [BAR_WHITE[1], 0.65, BAR_WHITE[0]]
-black = [BAR_BLACK[1], 0.0, BAR_BLACK[0]]
-component_colors = [
-    toned_palette([index], palette=BAR_PALETTE, saturation=BAR_SATURATION,
-                  white=white[n], black=black[n])[0]
-    for n, index in enumerate(indices)
-]
+# Shared bar colors (plot_colors.py): Network Ingestion blue, Host-FPGA DMA green,
+# Accelerator Control tomato.
+component_colors = [BAR_OURS, BAR_THIRD, BAR_BASELINE]
 
 # Printed at 0.95\columnwidth = 228 pt in the paper; the page is 9 in = 648 pt wide.
 pstyle = plot_fonts.paper_style(printed_width_pt=228.0, cropped_width_pt=648.0)

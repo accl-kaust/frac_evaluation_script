@@ -6,19 +6,11 @@ import matplotlib.patches as mpatches
 from matplotlib.ticker import MaxNLocator
 
 import plot_style
-from plot_colors import (
-    BAR_PALETTE, BAR_INDICES, BAR_SATURATION, BAR_WHITE, BAR_BLACK, toned_palette,
-)
+from plot_colors import BAR_BASELINE, LINE_OURS, LINE_THIRD
 
-# Req A/B use Figure 5's exact green/purple; Req C is a lighter yellow.
-request_colors = [BAR_INDICES[1], BAR_INDICES[0], 8]  # Req A, B, C
-white = [BAR_WHITE[1], BAR_WHITE[0], 0.25]
-black = [BAR_BLACK[1], BAR_BLACK[0], 0.0]
-request_palette = [
-    toned_palette([index], palette=BAR_PALETTE, saturation=BAR_SATURATION,
-                  white=white[n], black=black[n])[0]
-    for n, index in enumerate(request_colors)
-]
+# Shared colors (plot_colors.py): Req A tomato, Req B green, Req C blue. B and C only
+# ever show as flat boxes, i.e. their median lines, so they take the darker line tones.
+request_palette = [BAR_BASELINE, LINE_THIRD, LINE_OURS]  # Req A, B, C
 
 plot_style.apply()
 # Printed at \columnwidth = 240 pt in the paper; its tight-cropped PDF is ~696 pt wide.

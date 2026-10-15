@@ -9,22 +9,10 @@ import matplotlib.ticker as ticker
 import pickle
 
 import plot_fonts  # Helvetica Neue from fonts/, shared palette and print-size style
-from plot_colors import (
-    LINE_PALETTE, LINE_INDICES, LINE_SATURATION, LINE_WHITE, LINE_BLACK, toned_palette,
-)
+from plot_colors import LINE_BASELINE, LINE_OURS, LINE_THIRD
 
-# Shared print-contrast line palette; local controls follow this series order.
-# Order: fRAC (blue), CPU (vermilion), DPU (charcoal).
-palette_name = LINE_PALETTE
-indices = list(LINE_INDICES)
-saturation = list(LINE_SATURATION)
-white = list(LINE_WHITE)
-black = list(LINE_BLACK)
-system_colors = [
-    toned_palette([index], palette=palette_name, saturation=saturation[n],
-                  white=white[n], black=black[n])[0]
-    for n, index in enumerate(indices)
-]
+# Shared line colors (plot_colors.py): fRAC blue, CPU tomato, DPU dark green.
+system_colors = [LINE_OURS, LINE_BASELINE, LINE_THIRD]
 
 # Printed at \textwidth = 504 pt in the paper; its tight-cropped PDF is ~1275 pt wide.
 pstyle = plot_fonts.paper_style(printed_width_pt=504.0, cropped_width_pt=1275.2)

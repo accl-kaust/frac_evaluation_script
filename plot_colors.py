@@ -1,52 +1,36 @@
-"""Seaborn palettes and tone controls for the paper figures.
+"""Seaborn palette for the paper figures.
 
-Palette indices: 0 blue, 1 orange, 2 green, 3 red, 4 purple, 5 brown,
-6 pink, 7 gray, 8 yellow, 9 cyan. Hex colors are also accepted.
+Figures 1, 3, 5, 7, 8, 9 and 13 to 16 share three hues from seaborn's circular HUSL
+palette, sns.husl_palette(3, h=HUSL_H, s=HUSL_S): 0 tomato, 1 green, 2 blue. Each
+color has its own lightness so the three stay distinct in greyscale; lines use the
+darker tones, bars and boxes lighter tints of the same hues.
 """
 import seaborn as sns
 
 
-# Approved Figure 5 fills; Figures 1, 7, 8, 9, 14 and 15 reuse them.
-# Order: baseline purple, improved-design green. Each has its own brightness.
-BAR_PALETTE = "colorblind"
-BAR_INDICES = [4, 2]
-BAR_SATURATION = 0.8
-BAR_WHITE = [0.0, 0.5]
-BAR_BLACK = [0.15, 0.0]
-
-# Approved Figure 13 line palette, shared by Figures 3, 13 and 16.
-# Order: fRAC / Direct, CPU / Traditional / Transport, DPU.
-# Seaborn colorblind blue and vermilion; darkened palette gray for DPU.
-LINE_PALETTE = "colorblind"
-LINE_INDICES = [0, 3, 7]
-LINE_SATURATION = [1.0, 1.0, 1.0]
-LINE_WHITE = [0.0, 0.0, 0.0]
-LINE_BLACK = [0.0, 0.0, 0.6]
+HUSL_H = 0.05
+HUSL_S = 0.7
 
 
-def toned_palette(colors, *, palette="colorblind", saturation=1.0, white=0.0, black=0.0):
-    """Desaturate, blend toward white, then toward black (all controls: 0 to 1)."""
-    if not all(0 <= value <= 1 for value in (saturation, white, black)):
-        raise ValueError("saturation, white and black must be between 0 and 1")
-    base = sns.color_palette(palette, n_colors=10)
-    selected = []
-    for color in colors:
-        if isinstance(color, int):
-            if color not in range(10):
-                raise ValueError("Palette indices must be between 0 and 9")
-            color = base[color]
-        selected.append(color)
-    toned = sns.color_palette(selected, desat=saturation)
-    return sns.color_palette([
-        tuple((channel * (1 - white) + white) * (1 - black) for channel in color)
-        for color in toned
-    ])
+def _husl(hue, lightness):
+    return sns.husl_palette(3, h=HUSL_H, s=HUSL_S, l=lightness)[hue]
+
+
+# Lines and markers (Figures 3, 13 and 16); each is at least 3:1 against white.
+# Ours: fRAC / Direct / Transport+fRAC. Baseline: CPU / Traditional / Transport.
+# Third: DPU.
+LINE_OURS = _husl(2, 0.45)      # blue       #4566b6
+LINE_BASELINE = _husl(0, 0.60)  # tomato     #e66853
+LINE_THIRD = _husl(1, 0.30)     # dark green #234f31
+
+# Bars and boxes (Figures 1, 5, 7, 8, 9, 14 and 15).
+BAR_OURS = _husl(2, 0.65)       # #829ae1
+BAR_THIRD = _husl(1, 0.48)      # #3d7e52
+# A light tint of a red-orange reads pink, so this one is nudged in hue (18 -> 22.5
+# degrees) and saturation to keep the line tomato's perceived hue.
+BAR_BASELINE = sns.husl_palette(1, h=22.5 / 359, s=1.0, l=0.80)[0]  # #ffb1a1
 
 
 def bar_palette():
-    """Return Figure 5's darker purple and lighter green, with solid fills."""
-    return [
-        toned_palette([index], palette=BAR_PALETTE, saturation=BAR_SATURATION,
-                      white=BAR_WHITE[n], black=BAR_BLACK[n])[0]
-        for n, index in enumerate(BAR_INDICES)
-    ]
+    """Return the baseline (tomato) and improved-design (blue) bar fills."""
+    return [BAR_BASELINE, BAR_OURS]

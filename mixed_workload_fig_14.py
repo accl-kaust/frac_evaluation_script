@@ -10,9 +10,7 @@ import mpl_toolkits.axisartist.grid_helper_curvelinear as grid_helper_curvelinea
 from matplotlib import gridspec
 
 import plot_fonts  # Helvetica Neue from fonts/, shared palette and print-size style
-from plot_colors import (
-    BAR_PALETTE, BAR_INDICES, BAR_SATURATION, BAR_WHITE, BAR_BLACK, toned_palette,
-)
+from plot_colors import BAR_OURS
 
 # Printed at 0.32\textwidth = 161.3 pt in the paper; its tight-cropped PDF is ~540 pt wide.
 pstyle = plot_fonts.paper_style(printed_width_pt=161.3, cropped_width_pt=544.5)
@@ -20,19 +18,9 @@ pstyle = plot_fonts.paper_style(printed_width_pt=161.3, cropped_width_pt=544.5)
 # Function mapping - reordered to Top-K, Logit, Norm, CNN
 function_ids = [1, 3, 5, 2]  # Top-K, Logit, Norm, CNN
 function_names = ['Top-K', 'Logit', 'Norm', 'CNN']  # Shorter labels for x-axis
-function_legend_names = ['Top-K', 'Logit', 'Norm', 'CNN']  # Full names for legend
-# Logit uses Figure 5's exact purple; Top-K, Norm and CNN have their own color and tone controls.
-figure14_colors = {"Top-K": 9, "Logit": BAR_INDICES[0], "Norm": 8, "CNN": 1}
-white = {"Top-K": 0.25, "Logit": BAR_WHITE[0], "Norm": 0.4, "CNN": 0.0}
-# CNN is darkened so the four fills also read in black and white (ACM print check):
-# lightness L* steps Norm 89 > Top-K 76 > Logit 53 > CNN 38. At black=0.05 CNN was
-# L* 59, the same grey as Logit.
-black = {"Top-K": 0.0, "Logit": BAR_BLACK[0], "Norm": 0.0, "CNN": 0.40}
-function_colors = [
-    toned_palette([figure14_colors[name]], palette=BAR_PALETTE, saturation=BAR_SATURATION,
-                  white=white[name], black=black[name])[0]
-    for name in function_names
-]
+# Every bar in the shared bar blue (plot_colors.py); the x-axis names each function,
+# so the figure has no legend.
+function_colors = [BAR_OURS] * len(function_names)
 # Add hatching patterns for grayscale distinguishability
 #function_hatches = ['//', '\\\\', '||', '++']  # Diagonal, reverse diagonal, vertical, cross patterns
 
@@ -356,7 +344,7 @@ def create_mixed_figure():
     for tick in ax_bottom.get_yticklabels():
         tick.set_fontweight('medium')
     
-    # Add more space at top for legend and bottom for x-axis labels, without changing total figure size
+    # Add more space at bottom for x-axis labels, without changing total figure size
     plt.subplots_adjust(left=0.16, top=0.9, bottom=0.22)
     # Y-axis label on the bottom panel, centred on the two panels together (the panels
     # keep their proportions through frame_axes, so this axes fraction stays valid)
@@ -367,28 +355,7 @@ def create_mixed_figure():
     # Shared frame with figs 13 and 15: same page, same axes box (both panels plus the
     # break gap); saved uncropped.
     pstyle.frame_axes(fig, [ax_top, ax_bottom], plot_fonts.FRAME_13_15)
-    
-    # Add legend in one column on the left side, vertically centered on the axis break
-    # so it spans across the cut between the two subplots
-    gap_center_y = (ax_top.get_position().y0 + ax_bottom.get_position().y1) / 2
-    axes_left_x = ax_bottom.get_position().x0
-    fig.legend(
-        [plt.Rectangle((0, 0), 1, 1, fc=function_colors[i], 
-                       #hatch=function_hatches[i], 
-                      edgecolor='black', linewidth=pstyle.edge) for i in range(len(function_legend_names))],
-        function_legend_names,
-        loc='center left',
-        bbox_to_anchor=(axes_left_x + 0.01, gap_center_y + 0.075),  # Just inside the left edge, shifted up
-        ncol=1,        # One column of four entries
-        frameon=True,
-        prop={'size': pstyle.font, 'weight': 'medium'},
-        labelspacing=0.6,  # Vertical gap between legend rows
-        framealpha=1.0,    # opaque: no PDF transparency (ACM); the area behind is empty
-        edgecolor='black', # a black 0.6 pt frame instead of matplotlib's light grey
-        columnspacing=0.8,  # Space between columns
-        handletextpad=0.4  # Space between marker and text
-    )
-    
+
     # Remove top subplot's bottom and bottom subplot's top spines
     ax_top.spines['bottom'].set_visible(False)
     ax_bottom.spines['top'].set_visible(False)

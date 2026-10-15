@@ -22,22 +22,10 @@ import matplotlib.patches as mpatches
 from matplotlib.ticker import ScalarFormatter
 
 import plot_style
-from plot_colors import (
-    BAR_PALETTE, BAR_INDICES, BAR_SATURATION, BAR_WHITE, BAR_BLACK, toned_palette,
-)
+from plot_colors import bar_palette
 
-# Defaults in plot_colors.py; override here for Figure 5 only.
-# Order: Immediate (purple), Reassembled (green). Tone controls range from 0 to 1.
-palette_name = BAR_PALETTE
-indices = list(BAR_INDICES)
-saturation = BAR_SATURATION
-white = list(BAR_WHITE)  # [0.0, 0.5]: more white makes each color lighter
-black = list(BAR_BLACK)  # [0.15, 0.0]: more black makes each color darker
-color_baseline, color_improved = [
-    toned_palette([index], palette=palette_name, saturation=saturation,
-                  white=white[n], black=black[n])[0]
-    for n, index in enumerate(indices)
-]
+# Shared bar colors (plot_colors.py): Immediate tomato, Reassembled blue.
+color_baseline, color_improved = bar_palette()
 
 plot_style.apply()
 # Printed at 0.48\textwidth = 241.9 pt in the paper; the 12 in wide page is not tight-cropped.

@@ -21,22 +21,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import plot_fonts  # Helvetica Neue from fonts/, shared palette and print-size style
-from plot_colors import (
-    LINE_PALETTE, LINE_INDICES, LINE_SATURATION, LINE_WHITE, LINE_BLACK, toned_palette,
-)
+from plot_colors import LINE_BASELINE, LINE_OURS
 
-# Approved Seaborn colorblind pair, shared with the other system line plots.
-# Order: Transport+fRAC (blue), Transport (vermilion).
-palette_name = LINE_PALETTE
-indices = list(LINE_INDICES[:2])
-saturation = list(LINE_SATURATION[:2])
-white = list(LINE_WHITE[:2])
-black = list(LINE_BLACK[:2])
-color_frac, color_transport = [
-    toned_palette([index], palette=palette_name, saturation=saturation[n],
-                  white=white[n], black=black[n])[0]
-    for n, index in enumerate(indices)
-]
+# Shared line colors (plot_colors.py): Transport+fRAC blue, Transport tomato.
+color_frac, color_transport = LINE_OURS, LINE_BASELINE
 
 # Printed at 0.32\textwidth = 161.3 pt in the paper; its tight-cropped PDF is ~545 pt wide.
 pstyle = plot_fonts.paper_style(printed_width_pt=161.3, cropped_width_pt=544.5)
