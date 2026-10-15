@@ -9,9 +9,5 @@ __pycache__/
 # data/scalability/*.tar.xz instead; run ./unpack_data.sh to extract them.
 data/scalability/top_k_*_inst/
 
-# Helvetica Neue .ttf files extracted from the macOS system font by
-# extract_fonts.py. Apple-licensed, so not redistributed here; the figure
-# scripts fall back to matplotlib's default font when they are absent.
-fonts/
 Figures/
 Plot/

@@ -11,8 +11,9 @@ it does nothing and matplotlib's default font is used.
 Why the fonts/ directory: matplotlib (3.5) reads only the first face of a
 TrueType collection, and macOS ships Helvetica Neue as one .ttc, so the Medium
 face is invisible to it. extract_fonts.py pulls the three faces out of the
-system .ttc into standalone .ttf files that matplotlib can see. The fonts are
-Apple-licensed and therefore not tracked in git.
+system .ttc into standalone .ttf files that matplotlib can see. The three .ttf
+files are tracked in fonts/ so the figures render identically on any machine;
+extract_fonts.py regenerates them on a Mac if needed.
 
 Print-size style
 ----------------
