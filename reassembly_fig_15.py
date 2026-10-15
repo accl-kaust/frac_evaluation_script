@@ -129,7 +129,7 @@ def create_grouped_bar_chart(data, directory):
     drawn at the same position (visible where it extends above the solid bar)."""
     fig, ax = plt.subplots(figsize=(8, 5.69))  # 5.69 in keeps the printed height at ~90 pt with 6 pt text
 
-    # Solid bar colour (with reassembly): the shared bar blue from plot_colors.py; the
+    # Solid bar colour (with reassembly): the shared bar mint from plot_colors.py; the
     # emulated "without" result is a colourless dashed outline.
     colors = {'with': BAR_OURS}
 

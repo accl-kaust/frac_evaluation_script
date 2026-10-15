@@ -6,11 +6,11 @@ import matplotlib.patches as mpatches
 from matplotlib.ticker import MaxNLocator
 
 import plot_style
-from plot_colors import BAR_BASELINE, LINE_OURS, LINE_THIRD
+from plot_colors import BAR_BASELINE, LINE_BASELINE, LINE_OURS
 
-# Shared colors (plot_colors.py): Req A tomato, Req B green, Req C blue. B and C only
+# Shared colors (plot_colors.py): Req A mauve, Req B plum, Req C green. B and C only
 # ever show as flat boxes, i.e. their median lines, so they take the darker line tones.
-request_palette = [BAR_BASELINE, LINE_THIRD, LINE_OURS]  # Req A, B, C
+request_palette = [BAR_BASELINE, LINE_BASELINE, LINE_OURS]  # Req A, B, C
 
 plot_style.apply()
 # Printed at \columnwidth = 240 pt in the paper; its tight-cropped PDF is ~696 pt wide.

@@ -18,7 +18,7 @@ pstyle = plot_fonts.paper_style(printed_width_pt=161.3, cropped_width_pt=544.5)
 # Function mapping - reordered to Top-K, Logit, Norm, CNN
 function_ids = [1, 3, 5, 2]  # Top-K, Logit, Norm, CNN
 function_names = ['Top-K', 'Logit', 'Norm', 'CNN']  # Shorter labels for x-axis
-# Every bar in the shared bar blue (plot_colors.py); the x-axis names each function,
+# Every bar in the shared bar mint (plot_colors.py); the x-axis names each function,
 # so the figure has no legend.
 function_colors = [BAR_OURS] * len(function_names)
 # Add hatching patterns for grayscale distinguishability

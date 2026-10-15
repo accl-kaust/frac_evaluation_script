@@ -13,3 +13,5 @@ data/scalability/top_k_*_inst/
 # extract_fonts.py. Apple-licensed, so not redistributed here; the figure
 # scripts fall back to matplotlib's default font when they are absent.
 fonts/
+Figures/
+Plot/

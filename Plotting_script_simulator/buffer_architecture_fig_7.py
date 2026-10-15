@@ -6,7 +6,7 @@ import numpy as np
 import plot_style
 from plot_colors import bar_palette
 
-# Figure 5's tomato/blue; the shared colors live in plot_colors.py.
+# Figure 5's mauve/mint; the shared colors live in plot_colors.py.
 color_baseline, color_improved = bar_palette()
 
 plot_style.apply()

@@ -11,7 +11,7 @@ import pickle
 import plot_fonts  # Helvetica Neue from fonts/, shared palette and print-size style
 from plot_colors import LINE_BASELINE, LINE_OURS, LINE_THIRD
 
-# Shared line colors (plot_colors.py): fRAC blue, CPU tomato, DPU dark green.
+# Shared line colors (plot_colors.py): fRAC green, CPU plum, DPU mauve.
 system_colors = [LINE_OURS, LINE_BASELINE, LINE_THIRD]
 
 # Printed at \textwidth = 504 pt in the paper; its tight-cropped PDF is ~1275 pt wide.

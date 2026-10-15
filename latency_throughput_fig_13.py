@@ -23,7 +23,7 @@ import numpy as np
 import plot_fonts  # Helvetica Neue from fonts/, shared palette and print-size style
 from plot_colors import LINE_BASELINE, LINE_OURS
 
-# Shared line colors (plot_colors.py): Transport+fRAC blue, Transport tomato.
+# Shared line colors (plot_colors.py): Transport+fRAC green, Transport plum.
 color_frac, color_transport = LINE_OURS, LINE_BASELINE
 
 # Printed at 0.32\textwidth = 161.3 pt in the paper; its tight-cropped PDF is ~545 pt wide.

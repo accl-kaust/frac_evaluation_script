@@ -14,8 +14,8 @@ import numpy as np
 import plot_fonts  # Helvetica Neue from fonts/, shared palette and print-size style
 from plot_colors import BAR_BASELINE, BAR_OURS, BAR_THIRD
 
-# Shared bar colors (plot_colors.py): Network Ingestion blue, Host-FPGA DMA green,
-# Accelerator Control tomato.
+# Shared bar colors (plot_colors.py): Network Ingestion mint, Host-FPGA DMA sand,
+# Accelerator Control mauve.
 component_colors = [BAR_OURS, BAR_THIRD, BAR_BASELINE]
 
 # Printed at 0.95\columnwidth = 228 pt in the paper; the page is 9 in = 648 pt wide.

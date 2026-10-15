@@ -53,7 +53,7 @@ from matplotlib.ticker import MaxNLocator  # noqa: E402
 import plot_fonts  # noqa: E402  (Helvetica Neue from fonts/, shared palette and print-size style)
 from plot_colors import LINE_BASELINE, LINE_OURS  # noqa: E402
 
-# Shared line colors (plot_colors.py): Traditional offload tomato, Direct offload blue.
+# Shared line colors (plot_colors.py): Traditional offload plum, Direct offload green.
 color_traditional, color_direct = LINE_BASELINE, LINE_OURS
 
 

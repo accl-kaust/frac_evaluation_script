@@ -24,7 +24,7 @@ from matplotlib.ticker import ScalarFormatter
 import plot_style
 from plot_colors import bar_palette
 
-# Shared bar colors (plot_colors.py): Immediate tomato, Reassembled blue.
+# Shared bar colors (plot_colors.py): Immediate mauve, Reassembled mint.
 color_baseline, color_improved = bar_palette()
 
 plot_style.apply()
