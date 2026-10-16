@@ -146,8 +146,8 @@ def create_cdf_comparison_plot(base_directory="data/scalability"):
     """Latency CDF of fRAC, CPU and DPU with 1, 2 and 4 instances each, on a broken x-axis.
 
     The left panel zooms on 0-15 us, where all three fRAC curves rise (8-14 us); the right
-    panel shows 100-650 us, where the CPU and DPU curves rise. Only the low tails of the
-    CPU/DPU curves (below CDF 0.03) fall in the hidden 15-100 us gap. Panels and cut marks
+    panel shows 70-650 us, where the CPU and DPU curves rise. Only the low tails of the
+    CPU/DPU curves (below CDF 0.03) fall in the hidden 15-70 us gap. Panels and cut marks
     follow azure_trace_fig_18.py so the two figures match side by side in the paper.
     """
 
@@ -196,14 +196,13 @@ def create_cdf_comparison_plot(base_directory="data/scalability"):
         else:
             print(f"No data found for {label}!")
 
-    # Broken x-axis: left 0-15 us (fRAC), right 100-650 us (CPU, DPU)
+    # Broken x-axis: left 0-15 us (fRAC), right 70-650 us (CPU, DPU). The right panel
+    # starts 30 us before its first tick so the "100" label sits ~8 pt inside the panel,
+    # clear of the cut marks and of the left panel's "15" across the gap.
     ax_left.set_xlim(0, 15)
     ax_left.set_xticks(np.arange(0, 16, 5))
-    ax_right.set_xlim(100, 650)
-    # No label at the right panel's left edge: "100" there would collide with "15" across
-    # the cut and tight_layout would double the gap between the panels (fig 18 likewise
-    # leaves its right panel's edge unlabelled).
-    ax_right.set_xticks(np.arange(200, 651, 100))
+    ax_right.set_xlim(70, 650)
+    ax_right.set_xticks(np.arange(100, 651, 100))
     ax_left.set_ylim(0, 1)
 
     # Hide the spines between the panels
